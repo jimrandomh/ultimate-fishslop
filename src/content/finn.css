@@ -1,0 +1,158 @@
+.finn {
+  overflow: visible;
+}
+.finn .finn-tail {
+  transform-origin: 318px 212px;
+  animation: finn-tail 1.1s ease-in-out infinite;
+}
+@keyframes finn-tail {
+  50% {
+    transform: rotate(-9deg) scaleX(0.92);
+  }
+}
+.finn .finn-fin {
+  transform-origin: 230px 266px;
+  animation: finn-fin 0.9s ease-in-out infinite;
+}
+@keyframes finn-fin {
+  50% {
+    transform: rotate(14deg);
+  }
+}
+.finn .finn-bubbles circle {
+  animation: finn-bubble 3s ease-in infinite;
+}
+.finn .finn-bubbles circle:nth-child(2) {
+  animation-delay: 1s;
+}
+.finn .finn-bubbles circle:nth-child(3) {
+  animation-delay: 2s;
+}
+@keyframes finn-bubble {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+}
+.finn .finn-led {
+  animation: finn-led 1.2s steps(2) infinite;
+}
+@keyframes finn-led {
+  50% {
+    opacity: 0.2;
+  }
+}
+.finn .finn-sparkles path {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: finn-twinkle 0.9s ease-in-out infinite;
+}
+.finn .finn-sparkles path:nth-child(2) {
+  animation-delay: 0.3s;
+}
+.finn .finn-sparkles path:nth-child(3) {
+  animation-delay: 0.6s;
+}
+@keyframes finn-twinkle {
+  50% {
+    transform: scale(0.4) rotate(45deg);
+    opacity: 0.4;
+  }
+}
+.finn .finn-q {
+  animation: finn-q 1.6s ease-in-out infinite;
+}
+@keyframes finn-q {
+  50% {
+    transform: translateY(-8px) rotate(-6deg);
+  }
+}
+.finn .finn-tear,
+.finn .finn-sweat {
+  animation: finn-drip 1.8s ease-in infinite;
+}
+@keyframes finn-drip {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(26px);
+    opacity: 0;
+  }
+}
+.finn.mood-excited .finn-main {
+  transform-origin: 200px 220px;
+  animation: finn-hop 0.5s ease-in-out infinite;
+}
+@keyframes finn-hop {
+  50% {
+    transform: translateY(-8px) scale(1.02);
+  }
+}
+.finn.mood-shocked .finn-main {
+  transform-origin: 200px 220px;
+  animation: finn-shock 0.12s linear 4;
+}
+@keyframes finn-shock {
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+.finn.mood-glitch .finn-gl-r {
+  animation: finn-gl 0.33s steps(3) infinite;
+}
+.finn.mood-glitch .finn-gl-c {
+  animation: finn-gl 0.27s steps(3) infinite reverse;
+}
+.finn.mood-glitch .finn-gl-main {
+  animation: finn-gl-main 0.6s steps(4) infinite;
+}
+@keyframes finn-gl {
+  0% {
+    transform: translate(-12px, 0);
+  }
+  33% {
+    transform: translate(8px, -3px);
+  }
+  66% {
+    transform: translate(-4px, 4px);
+  }
+}
+@keyframes finn-gl-main {
+  0% {
+    clip-path: inset(0 0 0 0);
+  }
+  25% {
+    clip-path: inset(12% 0 40% 0);
+    transform: translateX(6px);
+  }
+  50% {
+    clip-path: inset(0 0 0 0);
+  }
+  75% {
+    clip-path: inset(55% 0 8% 0);
+    transform: translateX(-8px);
+  }
+}
+.finn .finn-scan {
+  animation: finn-scan 2s linear infinite;
+}
+@keyframes finn-scan {
+  to {
+    transform: translateY(29px);
+  }
+}

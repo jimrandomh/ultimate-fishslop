@@ -432,3 +432,31 @@
     height: 80px;
   }
 }
+
+/* VN choices float above the dialogue box so the portrait stays visible. */
+.dlg-vn .dlg-choices {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 14px);
+  width: min(660px, 100%);
+}
+.dlg-vn .dlg-box.choosing .dlg-choices {
+  margin-top: 0;
+}
+.dlg-vn .dlg-choice {
+  background: rgba(8, 16, 28, 0.93);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+.dlg-vn .dlg-choice:hover,
+.dlg-vn .dlg-choice:focus-visible {
+  background: rgba(16, 52, 66, 0.96);
+}
+.dlg-vn .dlg-choice.tag-jailbreak {
+  background: linear-gradient(90deg, rgba(70, 14, 44, 0.95), rgba(8, 16, 28, 0.93));
+}
+@media (max-width: 640px) {
+  .dlg-vn .dlg-choices {
+    width: 100%;
+  }
+}

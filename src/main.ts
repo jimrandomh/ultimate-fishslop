@@ -67,6 +67,14 @@ function isTyping(e: KeyboardEvent) {
 
 audioWidget();
 
+// Scale overlay UI up on large viewports (CSS `zoom: var(--ui)` in the stylesheets).
+function updateUiScale() {
+  const s = Math.min(window.innerWidth / 1440, window.innerHeight / 860);
+  document.documentElement.style.setProperty('--ui', String(Math.max(1, Math.min(2.4, s)).toFixed(3)));
+}
+updateUiScale();
+window.addEventListener('resize', updateUiScale);
+
 // ------------------------------------------------------------------ start
 
 const url = new URLSearchParams(location.search);

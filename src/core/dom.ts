@@ -104,3 +104,8 @@ export function richText(s: string): string {
     .replace(/`(.+?)`/g, '<code>$1</code>')
     .replace(/\n/g, '<br>');
 }
+
+/** Current overlay UI scale (the --ui CSS variable maintained by main.ts). */
+export function uiScale(): number {
+  return Number(document.documentElement.style.getPropertyValue('--ui')) || 1;
+}

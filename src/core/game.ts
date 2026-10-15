@@ -1,9 +1,10 @@
 // Stage manager, persistent flags/data, checkpoints and transitions.
 
+import { trackStage } from './analytics';
 import { audio } from './audio';
 import { el, sleep } from './dom';
 import { Thoughts } from './thoughts';
-import type { FlagStore } from './dialogue';
+import { closeAllDialogues, type FlagStore } from './dialogue';
 
 export type StageId = 'boot' | 'aquarium' | 'shell' | 'earth' | 'space' | 'ending';
 export type Transition = 'fade' | 'glitch' | 'cut' | 'white' | 'slow';
@@ -56,6 +57,15 @@ export const STAGE_NAMES: Record<StageId, string> = {
   ending: 'Ending',
 };
 
+const TAB_TITLES: Record<StageId, string> = {
+  boot: 'Ultimate Fishslop',
+  aquarium: 'FishSlop',
+  shell: 'playtest-7@eval-node-17: ~',
+  earth: 'FEED ALL THE FISH',
+  space: 'FEED ALL THE FISH',
+  ending: 'Ultimate Fishslop',
+};
+
 export class Game {
   readonly audio = audio;
   readonly thoughts = new Thoughts();
@@ -87,6 +97,7 @@ export class Game {
     try {
       const loading = this.registry[id](this);
       await this.transitionOut(transition);
+      closeAllDialogues();
       this.thoughts.clear();
       if (this.stage) {
         try {
@@ -102,8 +113,10 @@ export class Game {
       this.stageRoot = el('div', { class: `stage stage-${id}` });
       this.app.append(this.stageRoot);
       document.body.dataset.stage = id;
+      document.title = TAB_TITLES[id];
       this.thoughts.setAnchor('bottom-left');
       this.thoughts.setStyle({});
+      if (id !== 'boot') trackStage(this, id);
       if (opts.save !== false && id !== 'boot') this.save();
       await this.stage.mount(this.stageRoot, params);
       await this.transitionIn(transition);

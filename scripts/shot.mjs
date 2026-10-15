@@ -19,7 +19,7 @@ const keys = opt('keys', '');
 
 const browser = await chromium.launch({
   channel: 'chrome',
-  args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'],
+  args: ['--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'],
 });
 const page = await browser.newPage({ viewport: { width: w, height: h } });
 page.on('console', (m) => {
@@ -44,7 +44,7 @@ for (const k of keys.split(',').filter(Boolean)) {
     await page.waitForTimeout(Number(ms));
     await page.keyboard.up(key);
   } else if (k.startsWith('wait:')) await page.waitForTimeout(Number(k.slice(5)));
-  else if (k.startsWith('click:')) await page.click(k.slice(6));
+  else if (k.startsWith('click:')) await page.click(k.slice(6), { force: true });
   else await page.keyboard.press(k);
 }
 await page.waitForTimeout(wait);

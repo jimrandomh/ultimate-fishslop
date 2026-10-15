@@ -1,4 +1,6 @@
 :root {
+  /* Overlay UI scale; set from the viewport size in main.ts. */
+  --ui: 1;
   --ai: #5ef2ff;
   --ai-dim: rgba(94, 242, 255, 0.55);
   --hint: #ffd166;
@@ -124,7 +126,6 @@ body.glitch-out #app {
 .thoughts.anchor-top-left {
   left: 20px;
   top: 20px;
-  flex-direction: column-reverse;
 }
 .thoughts.anchor-bottom-right {
   right: 20px;
@@ -135,7 +136,6 @@ body.glitch-out #app {
   right: 20px;
   top: 20px;
   align-items: flex-end;
-  flex-direction: column-reverse;
 }
 .thoughts.anchor-bottom-center {
   left: 50%;
@@ -333,4 +333,31 @@ body[data-stage='ending'] .audio-widget {
   pointer-events: none;
   background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0.18) 3px);
   mix-blend-mode: multiply;
+}
+.thoughts.anchor-top-right,
+.thoughts.anchor-bottom-right {
+  align-items: stretch;
+}
+
+/* Large-viewport scaling for overlay UI. Elements positioned from projected 3D
+   coordinates (fish labels, pops) scale themselves in JS instead. */
+.thoughts,
+.audio-widget,
+.dlg-box,
+.dlg-stage,
+.boot-term {
+  zoom: var(--ui);
+}
+
+/* Terminals don't use programming ligatures (-> stays ->). */
+.sh-scroll,
+.thought,
+.boot-term,
+.dlg-text.font-mono,
+.dlg-text.is-player,
+code {
+  font-variant-ligatures: none;
+  font-feature-settings:
+    'liga' 0,
+    'calt' 0;
 }

@@ -1,6 +1,7 @@
 // Data-driven dialogue trees, presented visual-novel style ('vn') or as a modal card ('popup').
 //
-// A script is a map of node id -> DNode. Entering a node records the flag `v:<id>`, sets any
+// A script is a map of node id -> DNode. Entering a node records the flag `v:<id>` (or
+// `v:<ns>/<id>` with a namespace), sets any
 // `set` flags, runs its `action`, speaks its lines, then either shows choices, follows `next`,
 // or ends the dialogue with `end` (the value runDialogue resolves with).
 
@@ -90,16 +91,38 @@ export interface DialogueConfig {
   onAction?: (action: string, ui: DialogueUI) => void | Promise<void>;
   /** Called after every choice (for analytics/hints). */
   onChoice?: (choice: DChoice, nodeId: string) => void;
+  /** Values substituted for `{name}` placeholders in line and choice text. */
+  vars?: () => Record<string, string | number>;
+  /** Namespace for visit flags: node `x` records `v:<ns>/x` (and `if: 'v:x'` reads it). */
+  ns?: string;
 }
 
 function normLine(l: LineSpec): LineObj {
   return Array.isArray(l) ? { who: l[0], text: l[1], mood: l[2] } : l;
 }
 
-function choiceVisible(c: DChoice, flags: FlagStore): boolean {
-  if (c.once && flags.has(`v:${c.goto}`)) return false;
+/** The flag recording a visit to node `id`. */
+export function visitFlag(id: string, ns?: string) {
+  return ns ? `v:${ns}/${id}` : `v:${id}`;
+}
+
+function choiceVisible(c: DChoice, flags: FlagStore, ns?: string): boolean {
+  if (c.once && flags.has(visitFlag(c.goto, ns))) return false;
   const reqs = c.if === undefined ? [] : Array.isArray(c.if) ? c.if : [c.if];
-  return reqs.every((r) => (r.startsWith('!') ? !flags.has(r.slice(1)) : flags.has(r)));
+  return reqs.every((r) => {
+    const neg = r.startsWith('!');
+    let name = neg ? r.slice(1) : r;
+    if (name.startsWith('v:')) name = visitFlag(name.slice(2), ns);
+    return neg ? !flags.has(name) : flags.has(name);
+  });
+}
+
+// Close handles for every open dialogue, so a stage change can dismiss them.
+const openDialogues = new Set<() => void>();
+
+/** Dismisses every open dialogue; their promises resolve with 'closed'. */
+export function closeAllDialogues() {
+  for (const close of [...openDialogues]) close();
 }
 
 export function runDialogue(cfg: DialogueConfig): Promise<string> {
@@ -107,7 +130,8 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
   const playerKey = cfg.player ?? 'you';
   const parent = cfg.parent ?? document.body;
 
-  const portrait = el('div', { class: 'dlg-portrait' });
+  // Popups start without a portrait box until a speaker with a portrait talks.
+  const portrait = el('div', { class: `dlg-portrait ${layout === 'popup' ? 'empty' : ''}` });
   const nameTag = el('div', { class: 'dlg-name' });
   const text = el('div', { class: 'dlg-text' });
   const choices = el('div', { class: 'dlg-choices' });
@@ -158,6 +182,7 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
   };
 
   let skipRequested = false;
+  let closed = false;
   let advanceResolve: (() => void) | null = null;
 
   const onPointer = (e: PointerEvent) => {
@@ -190,15 +215,18 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
   root.addEventListener('pointerdown', onPointer);
   window.addEventListener('keydown', onKey, true);
 
+  const fill = (t: string) => {
+    if (!cfg.vars || !t.includes('{')) return t;
+    const v = cfg.vars();
+    return t.replace(/\{(\w+)\}/g, (m, k) => (k in v ? String(v[k]) : m));
+  };
+
   let currentSpeaker = '';
   const moods: Record<string, string> = {};
 
   function setPortrait(who: string, mood: string) {
     const member = cfg.cast[who];
-    if (!member?.portrait) {
-      if (layout === 'popup' && !portrait.innerHTML) portrait.classList.add('empty');
-      return;
-    }
+    if (!member?.portrait) return;
     portrait.classList.remove('empty');
     const key = `${who}:${mood}`;
     if (portrait.dataset.key === key) return;
@@ -245,10 +273,11 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
     advance.classList.remove('ready');
     skipRequested = false;
     const voice = member.voice ?? { pitch: 520 };
-    await typeInto(text, richText(line.text), {
+    await typeInto(text, richText(fill(line.text)), {
       cps: member.cps ?? 48,
       sound: () => audio.blip(voice.pitch, voice.wave ?? 'square', 0.03),
       skip: () => skipRequested,
+      cancelled: () => closed,
     });
     skipRequested = false;
     advance.classList.add('ready');
@@ -275,7 +304,7 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
               mouseenter: () => audio.hover(),
             },
           },
-          [el('span', { class: 'dlg-choice-num', text: String(i + 1) }), el('span', { html: richText(c.text) })],
+          [el('span', { class: 'dlg-choice-num', text: String(i + 1) }), el('span', { html: richText(fill(c.text)) })],
         );
         btn.style.animationDelay = `${i * 50}ms`;
         choices.append(btn);
@@ -293,13 +322,13 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
         console.warn(`[dialogue] missing node "${id}"`);
         return 'missing';
       }
-      cfg.flags.add(`v:${id}`);
+      cfg.flags.add(visitFlag(id, cfg.ns));
       node.set?.forEach((f) => cfg.flags.add(f));
       if (node.title) ui.setTitle(node.title);
       if (node.action) for (const a of node.action.split(/\s+/)) await builtinAction(a);
       for (const l of node.say ?? []) await speak(normLine(l));
       if (node.end !== undefined) return node.end;
-      const visible = (node.choices ?? []).filter((c) => choiceVisible(c, cfg.flags));
+      const visible = (node.choices ?? []).filter((c) => choiceVisible(c, cfg.flags, cfg.ns));
       if (visible.length) {
         const c = await showChoices(visible);
         cfg.onChoice?.(c, id);
@@ -314,7 +343,17 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
     return 'end';
   }
 
-  return run().then(async (result) => {
+  let closeThis = () => {};
+  const closedEarly = new Promise<string>((resolve) => {
+    closeThis = () => {
+      closed = true;
+      resolve('closed');
+    };
+    openDialogues.add(closeThis);
+  });
+
+  return Promise.race([run(), closedEarly]).then(async (result) => {
+    openDialogues.delete(closeThis);
     window.removeEventListener('keydown', onKey, true);
     root.removeEventListener('pointerdown', onPointer);
     root.classList.remove('in');

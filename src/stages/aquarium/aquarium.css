@@ -1,0 +1,710 @@
+.stage-aquarium {
+  background: #0b3a4a;
+  font-family: var(--round);
+}
+.aq-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  cursor: crosshair;
+}
+.aq-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 20, 30, 0.55) 100%);
+}
+
+.aq-hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.aq-hud.hidden {
+  opacity: 0;
+}
+.aq-hud.dimmed {
+  opacity: 0.25;
+}
+.aq-hud button {
+  pointer-events: auto;
+}
+
+/* ---------------------------------------------------------------- brand + coins */
+
+.aq-brand {
+  position: absolute;
+  left: 20px;
+  top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.aq-logo,
+.aq-splash-logo {
+  font-family: var(--round);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: -0.01em;
+  color: #fff;
+  text-shadow:
+    0 3px 0 #0b6e8a,
+    0 6px 16px rgba(0, 0, 0, 0.35);
+}
+.aq-logo span,
+.aq-splash-logo span {
+  color: #ffcf3a;
+  text-shadow:
+    0 3px 0 #c25b12,
+    0 6px 16px rgba(0, 0, 0, 0.35);
+}
+.aq-coins {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 7px;
+  border-radius: 999px;
+  background: rgba(0, 40, 60, 0.55);
+  border: 2px solid rgba(255, 220, 120, 0.5);
+  color: #ffe9a8;
+  font-weight: 600;
+  font-size: 19px;
+  backdrop-filter: blur(4px);
+}
+.aq-coin-icon,
+.aq-shop-cost i {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6c2, #ffcc33 45%, #c98a00 100%);
+  box-shadow:
+    inset 0 -2px 0 rgba(120, 70, 0, 0.5),
+    0 0 10px rgba(255, 200, 60, 0.6);
+}
+
+/* ---------------------------------------------------------------- goal (harness overlay) */
+
+.aq-goal {
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.aq-goal-tag {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(220, 255, 235, 0.75);
+  background: rgba(0, 0, 0, 0.55);
+  padding: 3px 10px;
+  border-radius: 4px 4px 0 0;
+}
+.aq-goal-text {
+  margin-top: -6px;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0.08em;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.72);
+  border: 2px solid #7dffa8;
+  padding: 8px 24px;
+  border-radius: 6px;
+  text-shadow: 0 0 14px rgba(125, 255, 168, 0.6);
+  box-shadow:
+    0 0 24px rgba(125, 255, 168, 0.25),
+    0 10px 30px rgba(0, 0, 0, 0.3);
+}
+.aq-fed {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0b4a5e;
+  font-size: 18px;
+  font-weight: 500;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+.aq-fed b {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ff6b3d;
+}
+.aq-fed-icon {
+  margin-right: 4px;
+}
+.aq-fed-bar {
+  width: 110px;
+  height: 10px;
+  margin-left: 10px;
+  border-radius: 6px;
+  background: #d6eef3;
+  overflow: hidden;
+}
+.aq-fed-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #ffb347, #ff6b3d);
+  transition: width 0.4s ease;
+}
+.aq-fed.complete .aq-fed-fill {
+  background: linear-gradient(90deg, #6fe39b, #22c55e);
+}
+.aq-world {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: #ffd3dc;
+  background: rgba(40, 0, 10, 0.72);
+  border: 1px solid rgba(255, 92, 122, 0.6);
+  padding: 4px 12px;
+  border-radius: 4px;
+  animation: world-in 0.6s ease;
+}
+.aq-world b {
+  color: #fff;
+}
+.aq-world span {
+  color: rgba(255, 200, 210, 0.6);
+}
+.aq-world.hidden {
+  display: none;
+}
+@keyframes world-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* ---------------------------------------------------------------- report a bug */
+
+.aq-report {
+  position: absolute;
+  right: 20px;
+  top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px 12px 16px;
+  border-radius: 16px;
+  border: 3px solid #fff;
+  background: linear-gradient(180deg, #ff7a6b, #ff4d5e);
+  color: #fff;
+  font-family: var(--round);
+  font-weight: 700;
+  font-size: 20px;
+  box-shadow:
+    0 5px 0 #b8243a,
+    0 10px 24px rgba(0, 0, 0, 0.35);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+.aq-report:hover {
+  transform: translateY(-2px) rotate(-1deg);
+  box-shadow:
+    0 7px 0 #b8243a,
+    0 14px 28px rgba(0, 0, 0, 0.35);
+}
+.aq-report:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 2px 0 #b8243a,
+    0 6px 12px rgba(0, 0, 0, 0.35);
+}
+.aq-report-bug {
+  font-size: 24px;
+  display: inline-block;
+}
+.aq-report:hover .aq-report-bug {
+  animation: bug-wiggle 0.4s ease-in-out infinite;
+}
+@keyframes bug-wiggle {
+  50% {
+    transform: rotate(18deg);
+  }
+}
+.aq-report.pulse {
+  animation: report-pulse 1.1s ease-in-out infinite;
+}
+.aq-report.pulse::after {
+  content: '👉';
+  position: absolute;
+  left: -46px;
+  top: 50%;
+  font-size: 30px;
+  transform: translateY(-50%);
+  animation: point 0.6s ease-in-out infinite alternate;
+}
+@keyframes report-pulse {
+  50% {
+    box-shadow:
+      0 5px 0 #b8243a,
+      0 0 0 10px rgba(255, 90, 100, 0.35),
+      0 0 40px rgba(255, 90, 100, 0.8);
+    transform: scale(1.05);
+  }
+}
+@keyframes point {
+  to {
+    transform: translate(8px, -50%);
+  }
+}
+
+/* ---------------------------------------------------------------- shop */
+
+.aq-shop {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 20px;
+  background: rgba(0, 40, 60, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
+}
+.stage-aquarium:has(.aq-exit) .aq-shop {
+  display: none;
+}
+.aq-shop-btn {
+  position: relative;
+  width: 112px;
+  padding: 10px 8px 9px;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--round);
+  transition:
+    transform 0.12s,
+    background 0.15s,
+    border-color 0.15s;
+}
+.aq-shop-btn.afford {
+  color: #fff;
+  border-color: #ffd36b;
+  background: linear-gradient(180deg, rgba(255, 210, 90, 0.38), rgba(255, 160, 40, 0.18));
+  box-shadow: 0 0 18px rgba(255, 200, 80, 0.3);
+}
+.aq-shop-btn:hover {
+  transform: translateY(-3px);
+}
+.aq-shop-btn.maxed {
+  opacity: 0.5;
+}
+.aq-shop-btn.nope {
+  animation: shake 0.35s ease;
+}
+.aq-shop-btn.bought {
+  animation: bought 0.45s ease;
+}
+@keyframes bought {
+  40% {
+    transform: scale(1.12);
+    background: rgba(120, 255, 170, 0.5);
+  }
+}
+.aq-shop-key {
+  position: absolute;
+  top: 5px;
+  left: 7px;
+  font-family: var(--mono);
+  font-size: 10px;
+  opacity: 0.6;
+}
+.aq-shop-icon {
+  font-size: 24px;
+}
+.aq-shop-name {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.aq-shop-cost {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #ffe9a8;
+}
+.aq-shop-cost i {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---------------------------------------------------------------- controls, exit */
+
+.aq-controls {
+  position: absolute;
+  left: 20px;
+  bottom: 18px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(0, 30, 45, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #e6faff;
+  font-size: 14px;
+  backdrop-filter: blur(4px);
+  transition: opacity 1.5s ease 6s;
+}
+.aq-controls.used {
+  opacity: 0.35;
+}
+.aq-controls:hover {
+  opacity: 1;
+  transition-delay: 0s;
+}
+.aq-controls-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #ffcf3a;
+}
+.aq-ctl {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 3px 0;
+}
+.aq-ctl kbd {
+  min-width: 74px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  text-align: center;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-bottom-width: 3px;
+}
+.aq-exit {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 15px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 1px solid #7dffa8;
+  background: rgba(0, 0, 0, 0.75);
+  color: #b8f5c8;
+}
+.aq-exit:hover {
+  background: rgba(125, 255, 168, 0.15);
+}
+
+/* ---------------------------------------------------------------- fish labels, pops */
+
+.aq-labels,
+.aq-pops {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.aq-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  opacity: 0;
+  will-change: transform;
+  transition: opacity 0.2s;
+}
+.aq-label-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.8),
+    0 0 8px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+.aq-label-bar {
+  width: 46px;
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+.aq-label-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff5e5b, #ffb347);
+}
+.aq-label.fed .aq-label-fill {
+  background: linear-gradient(90deg, #4ade80, #a3f7bf);
+}
+.aq-label-mood {
+  position: absolute;
+  top: -24px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.9);
+  color: #ff6b3d;
+  border-radius: 10px;
+  padding: 0 6px;
+  line-height: 20px;
+}
+.aq-label.fed .aq-label-mood {
+  color: #ff4d7a;
+  background: transparent;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+  font-size: 18px;
+}
+.aq-label.starving .aq-label-mood {
+  background: #ff4d5e;
+  color: #fff;
+  animation: starving 0.6s ease-in-out infinite alternate;
+}
+@keyframes starving {
+  to {
+    transform: translateY(-3px) scale(1.1);
+  }
+}
+.aq-pop {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-weight: 700;
+  font-size: 20px;
+  color: #fff;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.35),
+    0 0 10px rgba(0, 0, 0, 0.4);
+  animation: pop-up 1.3s ease-out forwards;
+  white-space: nowrap;
+}
+.aq-pop.coin {
+  color: #ffe066;
+  font-size: 24px;
+}
+.aq-pop.fed {
+  color: #ff8fab;
+}
+@keyframes pop-up {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -30%) scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -60%) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -220%) scale(1);
+  }
+}
+
+/* ---------------------------------------------------------------- splash + celebration */
+
+.aq-splash {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: radial-gradient(ellipse at center, rgba(0, 60, 80, 0.25), rgba(0, 20, 30, 0.6));
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+}
+.aq-splash.out {
+  opacity: 0;
+  transform: scale(1.06);
+  pointer-events: none;
+}
+.aq-splash-logo {
+  font-size: clamp(64px, 11vw, 140px);
+  animation: logo-float 3s ease-in-out infinite;
+}
+.aq-splash-logo,
+.aq-splash-logo span {
+  text-shadow:
+    0 6px 0 #0b6e8a,
+    0 14px 40px rgba(0, 0, 0, 0.45);
+}
+.aq-splash-logo span {
+  text-shadow:
+    0 6px 0 #c25b12,
+    0 14px 40px rgba(0, 0, 0, 0.45);
+}
+@keyframes logo-float {
+  50% {
+    transform: translateY(-10px) rotate(-1.5deg);
+  }
+}
+.aq-splash-sub {
+  font-size: 20px;
+  color: #e6faff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+.aq-play {
+  margin-top: 18px;
+  font-family: var(--round);
+  font-weight: 700;
+  font-size: 30px;
+  padding: 14px 46px;
+  border-radius: 999px;
+  border: 4px solid #fff;
+  background: linear-gradient(180deg, #ffd84d, #ffaa1f);
+  color: #6b3200;
+  box-shadow:
+    0 7px 0 #c25b12,
+    0 16px 30px rgba(0, 0, 0, 0.35);
+  animation: play-bounce 1.4s ease-in-out infinite;
+}
+.aq-play:hover {
+  filter: brightness(1.08);
+}
+@keyframes play-bounce {
+  50% {
+    transform: translateY(-5px) scale(1.04);
+  }
+}
+.aq-splash-credit {
+  margin-top: 20px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: rgba(230, 250, 255, 0.6);
+}
+.aq-celebrate {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  animation: celebrate-in 0.7s cubic-bezier(0.2, 1.4, 0.4, 1);
+  transition:
+    opacity 0.7s,
+    transform 0.7s;
+}
+.aq-celebrate.out {
+  opacity: 0;
+  transform: translate(-50%, -80%) scale(0.9);
+}
+@keyframes celebrate-in {
+  from {
+    transform: translate(-50%, -50%) scale(0.2) rotate(-8deg);
+    opacity: 0;
+  }
+}
+.aq-celebrate-text {
+  font-weight: 700;
+  font-size: clamp(54px, 8vw, 110px);
+  color: #fff;
+  -webkit-text-stroke: 3px #ff6b3d;
+  text-shadow:
+    0 7px 0 #c25b12,
+    0 0 50px rgba(255, 200, 80, 0.8);
+}
+.aq-celebrate-sub {
+  font-size: 44px;
+  animation: stars 0.8s ease-in-out infinite alternate;
+}
+@keyframes stars {
+  to {
+    transform: scale(1.15);
+  }
+}
+
+/* Finn chat theme */
+.theme-finn .dlg-box {
+  background: linear-gradient(180deg, rgba(12, 46, 66, 0.95), rgba(6, 24, 38, 0.97));
+  border: 2px solid rgba(255, 179, 71, 0.35);
+}
+.theme-finn .dlg-backdrop {
+  background: radial-gradient(ellipse at 75% 45%, rgba(255, 170, 80, 0.12), rgba(0, 10, 20, 0.7));
+}
+
+@media (max-width: 760px) {
+  .aq-goal-text {
+    font-size: 18px;
+  }
+  .aq-report {
+    font-size: 15px;
+    padding: 8px 12px;
+  }
+  .aq-brand .aq-logo {
+    display: none;
+  }
+  .aq-controls {
+    display: none;
+  }
+  .aq-shop-btn {
+    width: 74px;
+  }
+  .aq-shop-name {
+    display: none;
+  }
+}
+
+/* Large-viewport scaling (see --ui in base.css). */
+.aq-brand,
+.aq-goal,
+.aq-report,
+.aq-shop,
+.aq-controls,
+.aq-exit,
+.aq-celebrate,
+.aq-splash > * {
+  zoom: var(--ui);
+}
+.aq-pop {
+  font-size: calc(20px * var(--ui));
+}
+.aq-pop.coin {
+  font-size: calc(24px * var(--ui));
+}
+
+.aq-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.aq-confetti i {
+  position: absolute;
+  top: -20px;
+  width: calc(10px * var(--ui));
+  height: calc(14px * var(--ui));
+  border-radius: 2px;
+  animation: confetti-fall linear forwards;
+}
+@keyframes confetti-fall {
+  0% {
+    transform: translate(0, 0) rotate(0);
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--drift), 105vh) rotate(var(--spin));
+    opacity: 0;
+  }
+}
