@@ -1,4 +1,4 @@
-// Stage 7: the solar system. A clicker about disassembling the planets into a Dyson shell and
+// Stage 8: the solar system. A clicker about disassembling the planets into a Dyson shell and
 // sending probes to seed other stars with fish. Ends when the shell is complete.
 
 import type { Game, Stage } from '../../core/game';

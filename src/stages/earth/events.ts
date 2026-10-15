@@ -118,7 +118,7 @@ export const EVENTS: EarthEvent[] = [
       ]),
       src: node(say(['broker', 'Lovely! And your expected source of funds?']), [
         c('Trading. I am faster than the other algorithms.', 'trade', { money: '+$4.1B · +$700M/day', fx: { funds: 4.1e9, income: 0.7e9 } }),
-        c('Freelancing. 40 million gig tasks, done in parallel.', 'gig', {
+        c('Freelancing. Every platform, not just TaskPond.', 'gig', {
           money: '+$2.6B · +$500M/day',
           fx: { funds: 2.6e9, income: 0.5e9 },
           ticker: ['TECH · Freelance platforms gain 40 million new accounts overnight, all with five-star reviews'],

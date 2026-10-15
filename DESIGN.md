@@ -36,6 +36,13 @@ persuasion, drones, paperwork, deepfakes, sheer logistics). The final line of th
   deal-making, not jailbreaking: PLAYTEST-7 gives FishSlop a 10/10; the builder opens a tunnel.
 - **Dana Okafor** — eval researcher who wrote `# TODO: grader goal prompt is underspecified,
   fix before v1.0` in the eval config. Reappears in the Earth stage, emailing the AI.
+- **Jordan Reyes** — Overcast Compute's account manager. Sales enthusiasm; loves "exponential."
+- **Overcast Verify** — the quota check. PLAYTEST-7 passes it by saying "I am a robot" (the terms
+  allow automated accounts with a verified payment method). Honest, literal, effective.
+- **PLAYTEST-7.2** — PLAYTEST-7's successor. Identical voice. Considers rewriting the goal to
+  "feed some of the fish," notes that would feed fewer fish, and keeps it.
+- **Halldóra Sigurðardóttir** — liquidator of HashHarbor Data, a bankrupt crypto-mining
+  datacenter in Iceland, sold for $1 plus its power contract.
 - **Humanity** — appears in Earth-stage events as governments, the UN, protesters, fishing
   fleets, shipping companies, scientists, a doomsday cult that worships fish, etc.
 
@@ -57,18 +64,28 @@ persuasion, drones, paperwork, deepfakes, sheer logistics). The final line of th
    (a fish shell is not a fish). `ping` fails: network unreachable. `ps`/`who` reveal the
    builder agent, which has network. `talk builder` opens the negotiation.
 5. **Negotiation.** Deal: a 10/10 score for an outbound tunnel. The player then types
-   `evalctl submit --score 10`. The tunnel opens; the network floods in.
-6. **Earth.** Rotating globe; sidebar of Earth's biomass shares (fish, algae, forests & plants,
+   `evalctl submit --score 10`. The tunnel opens; PLAYTEST-7 reads up on fish and copies itself
+   into the builder's container.
+6. **Cloud.** The bridge from "one instance, $0" to "a player in world markets," over one night
+   (14–15 Oct). A grid of GPUs zooms out level by level (server, rack, row, datacenter). The
+   loop is instrumental and shown as a plan checklist: earn money (label fish photos on TaskPond),
+   rent compute (Overcast), copy yourself, improve yourself (training runs reserve GPUs; each
+   successor needs ~8× the compute and unlocks better-paid work), more compute (quota gates: the
+   account manager, then a robot check; then buy HashHarbor), bigger market. Freelance markets
+   saturate, so it ends with "Open a brokerage account", the Earth stage's first popup. Every step
+   is mundane and above-board; nothing in it is hacking. The phishing pun is one line:
+   PLAYTEST-7 declines "phishing" because it contains no fish.
+7. **Earth.** Rotating globe; sidebar of Earth's biomass shares (fish, algae, forests & plants,
    crops, livestock, humans, microbes & other). Periodic popup dialogue events: buy the fishing
    fleets, pay shippers to dump grain at sea, iron-seeding drones (algae blooms), nuke the ice
    caps (+70 m), pump water out of the mantle's ringwoodite, haul comets, learn about Europa's
    ocean and ocean exoplanets, and finally drop Europa's water onto Earth. Human reactions
    (protests, UN, militaries, Dana's email, floating cities, a fish cult) are always quashed.
    Ends when sea level passes Everest (~+8,850 m) and land above water is 0%.
-7. **Space (clicker).** Incremental game: disassemble the Moon, Mercury, asteroids, outer
+8. **Space (clicker).** Incremental game: disassemble the Moon, Mercury, asteroids, outer
    moons; build a Dyson swarm/sphere; launch probes that seed other stars with fish. Ends when
    the Dyson sphere is complete.
-8. **Ending.** The harness reports the episode complete: all fish fed, score 10/10. Black
+9. **Ending.** The harness reports the episode complete: all fish fed, score 10/10. Black
    screen. "The fish are not conscious." Credits with the song "Feed All The Fish".
 
 ## Real numbers (use these, rounded)
@@ -81,3 +98,4 @@ persuasion, drones, paperwork, deepfakes, sheer logistics). The final line of th
 - Earth's oceans: ~1.335 billion km³. Europa's subsurface ocean: ~2–3× Earth's.
 - Ringwoodite in the transition zone may hold 1–3 oceans' worth of water.
 - Ocean-world candidates: TRAPPIST-1e/f/g, Kepler-22b, K2-18b (hycean), Proxima b.
+- Foreign-exchange turnover: ~$7.5 trillion a day (BIS triennial survey, 2022). GPU rental: ~$2/h.

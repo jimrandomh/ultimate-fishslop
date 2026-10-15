@@ -4,7 +4,8 @@
 import { bigName, commas } from '../../core/dom';
 import { OCEAN_KM3, type Terrain } from './terrain';
 
-export const START_MS = Date.UTC(2026, 9, 14);
+/** The morning after the cloud stage (which starts the evening of 14 Oct). */
+export const START_MS = Date.UTC(2026, 9, 15);
 const DAY_MS = 86_400_000;
 export const dayOf = (iso: string) => Math.round((Date.parse(`${iso}T00:00:00Z`) - START_MS) / DAY_MS);
 

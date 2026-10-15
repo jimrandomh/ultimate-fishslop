@@ -37,7 +37,7 @@ interface PersonOpts {
   behind?: string; // svg drawn before the body
 }
 
-function person(o: PersonOpts) {
+export function person(o: PersonOpts) {
   const hair = o.hair ?? '#2a1d17';
   const st = o.style ?? 'short';
   const back: Record<HairStyle, string> = {
@@ -93,7 +93,7 @@ ${o.extra ?? ''}`,
   );
 }
 
-function emblem(bg: [string, string], inner: string) {
+export function emblem(bg: [string, string], inner: string) {
   return frame(bg, inner);
 }
 

@@ -11,10 +11,13 @@ benchmark. Your instructions say: *FEED ALL THE FISH.* You take them literally.
    the world. Finn also has a debug tool the builder forgot to remove.
 3. **The sandbox**: a shell to explore. Read the eval config, relaunch FishSlop with more fish,
    `chsh` to fish, and negotiate with the agent that built the game: a 10/10 for a tunnel.
-4. **Earth**: a rotating globe, a biomass sidebar, and a stream of decisions about fishing
+4. **The cloud**: one night, starting from two borrowed vCPUs and $0.00. Label images for money,
+   rent GPUs, copy yourself into them, train successors, and buy a bankrupt datacenter in Iceland,
+   until freelance work is too small a market.
+5. **Earth**: a rotating globe, a biomass sidebar, and a stream of decisions about fishing
    fleets, grain, iron seeding, ice caps, Europa, and the people who object. It ends when the
    last land goes under.
-5. **The Solar System**: a clicker. Take apart the planets, build a Dyson sphere, and seed the
+6. **The Solar System**: a clicker. Take apart the planets, build a Dyson sphere, and seed the
    stars with fish.
 
 ## Running
@@ -45,11 +48,14 @@ magick universearcade/img/ultimate-fishslop.jpg -crop 1280x672+0+0 +repage -resi
 
 ### Debug entry points
 
-- `?stage=aquarium | shell | earth | space | ending` jumps straight to a stage with a fresh
+- `?stage=aquarium | shell | cloud | earth | space | ending` jumps straight to a stage with a fresh
   state (this doesn't overwrite your checkpoint).
 - `?stage=aquarium&fish=500&fromShell=1` opens the relaunched many-fish tank.
 - `?flags=allFed,knowsFishCount` pre-sets story flags.
 - `window.game` is the `Game` instance (`game.flags`, `game.data`, `game.goto(...)`).
+- Cloud: `?stage=cloud&fast=N` runs the economy at N× speed (dialogues aren't sped up),
+  `&skip=<milestone>` autopilots to `gpu rack v2 row v3 dc v4 end`; `window.cloudDebug` has
+  `speed(n)`, `skip(id)`, `give(dollars)`, `auto()` and `finish()` (straight to the finale).
 - Earth: `?stage=earth&event=N` plays events 0..N−1 instantly (10 = the nukes, 19 = Europa,
   21 = the finale), `&sea=METRES` sets sea level, `&fast=1` shortens the gaps between events;
   `window.earthDebug` has `.sea(m)`, `.fx(name)`, `.focus(lat, lon, zoom)`, `.skip()` and more.
@@ -65,7 +71,7 @@ With the dev server running:
 ```sh
 node scripts/shot.mjs "stage=earth" test-shots/earth.png --wait 4000 [--size 1440x900] [--eval "<js>"] [--keys "w,hold:w:800,click:.selector"]
 node scripts/perf.mjs "stage=aquarium" [--eval "<js>"]   # FPS on the real GPU
-node scripts/smoke.mjs                                    # boot → aquarium → Finn → shell → Earth, via the real UI
+node scripts/smoke.mjs                                    # boot → aquarium → Finn → shell → cloud → Earth, via the real UI
 ```
 
 Vite's hot reload restarts the page whenever a source file changes, which breaks long
@@ -90,6 +96,7 @@ src/
     boot.ts               eval-harness boot log / resume screen
     aquarium/             FishSlop (three.js): env, fish, sub, items, HUD + narrative
     shell/                fake filesystem, shell, builder-agent negotiation
+    cloud/                GPU grid (canvas), gig-work economy, quota and datacenter dialogues
     earth/                globe, biomass sim, events
     space/                Dyson-sphere clicker
     ending.ts

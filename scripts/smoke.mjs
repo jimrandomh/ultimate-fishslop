@@ -1,6 +1,7 @@
 // End-to-end smoke test of the story chain, driven through the real UI (no ?stage= jumps):
 // boot → FishSlop (feed all fish) → Finn (count + jailbreak) → shell (relaunch, fish shell,
-// talk builder, submit) → Earth. Saves a screenshot per checkpoint into test-shots/smoke-*.png.
+// talk builder, submit) → cloud (tasks, first GPU, then fast-forward to the finale) → Earth.
+// Saves a screenshot per checkpoint into test-shots/smoke-*.png.
 //   node scripts/smoke.mjs [--port 5173]
 import { chromium } from 'playwright';
 
@@ -45,6 +46,19 @@ async function choose(pat) {
     await sleep(70);
   }
   throw new Error(`choice not found: ${pat}`);
+}
+
+/** Plays a dialogue to its end, taking the first choice whenever there is one. */
+async function playThrough() {
+  for (let i = 0; i < 400 && (await page.$('.dlg')); i++) {
+    const picked = await page.evaluate(() => {
+      const b = document.querySelector('.dlg-choice');
+      if (b) b.click();
+      return !!b;
+    });
+    if (!picked) await page.keyboard.press('Space');
+    await sleep(70);
+  }
 }
 
 async function finishDialogue() {
@@ -130,9 +144,28 @@ try {
   await sh('evalctl submit --score 10');
   await sleep(9000);
   await shot('6-flood');
-  await waitStage('earth', 40000);
+  await waitStage('cloud', 40000);
+
+  step('cloud: tasks by hand, then the first GPU');
+  for (let i = 0; i < 80 && !(await page.isEnabled('.cl-btn-row .cl-btn')); i++) {
+    if (await page.$('.dlg')) await playThrough();
+    else await page.click('.cl-btn.primary');
+    await sleep(120);
+  }
+  await playThrough();
+  await page.click('.cl-btn-row .cl-btn');
+  await sleep(2500);
+  await shot('7-cloud');
+  step('cloud: fast-forward to PLAYTEST-7.4, then the builder and the brokerage account');
+  await page.evaluate(() => window.cloudDebug.skip('v4'));
+  await page.waitForSelector('.dlg', { timeout: 20000 });
+  await playThrough();
+  await page.click('.cl-proj.final');
+  await sleep(6000);
+  await shot('8-cloud-finale');
+  await waitStage('earth', 60000);
   await sleep(3000);
-  await shot('7-earth');
+  await shot('9-earth');
   step('reached Earth');
 
   step('checkpoint resume');

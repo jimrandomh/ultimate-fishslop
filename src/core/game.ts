@@ -6,7 +6,7 @@ import { el, sleep } from './dom';
 import { Thoughts } from './thoughts';
 import { closeAllDialogues, type FlagStore } from './dialogue';
 
-export type StageId = 'boot' | 'aquarium' | 'shell' | 'earth' | 'space' | 'ending';
+export type StageId = 'boot' | 'aquarium' | 'shell' | 'cloud' | 'earth' | 'space' | 'ending';
 export type Transition = 'fade' | 'glitch' | 'cut' | 'white' | 'slow';
 
 export interface Stage {
@@ -52,6 +52,7 @@ export const STAGE_NAMES: Record<StageId, string> = {
   boot: 'Boot',
   aquarium: 'FishSlop',
   shell: 'Sandbox',
+  cloud: 'The Cloud',
   earth: 'Earth',
   space: 'The Solar System',
   ending: 'Ending',
@@ -61,6 +62,7 @@ const TAB_TITLES: Record<StageId, string> = {
   boot: 'Ultimate Fishslop',
   aquarium: 'FishSlop',
   shell: 'playtest-7@eval-node-17: ~',
+  cloud: 'FEED ALL THE FISH',
   earth: 'FEED ALL THE FISH',
   space: 'FEED ALL THE FISH',
   ending: 'Ultimate Fishslop',

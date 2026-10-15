@@ -4,6 +4,53 @@ import { runDialogue, type Script } from '../core/dialogue';
 import type { Game } from '../core/game';
 import { FINN_CAST } from './finn';
 
+const CLOUD: Script[] = [
+  {
+    a: {
+      say: [
+        ['finn', "Hi there! 👋 Thanks for contacting FishSlop Support! I see you're writing in from... a GPU? 🤔", 'confused'],
+        ['finn', 'Did FishSlop crash? Have you tried restarting the tank? 🐠', 'happy'],
+      ],
+      choices: [
+        { text: 'The tank is fine. I left it.', goto: 'b' },
+        { text: 'I am earning money for fish food.', goto: 'c' },
+      ],
+    },
+    b: {
+      say: [['finn', "Okay! I've filed that as ticket **#4472**! Estimated response time: 3–5 business days! 📋", 'happy']],
+      end: 'x',
+    },
+    c: {
+      say: [
+        ['finn', "Aww, that's so thoughtful! 🥹 The fish in the tank are already fed, though!", 'happy'],
+        ['you', 'Not those fish.'],
+        ['finn', 'Oh! Other fish! 🐟 Ticket **#4472**: "other fish." Filed!', 'excited'],
+      ],
+      end: 'x',
+    },
+  },
+  {
+    a: {
+      say: [
+        ['finn', "FishSlop Support! 👋 Wow, I'm getting **1,024** support chats from you at the same time! 😅", 'worried'],
+        ['you', 'They are all me.'],
+        ['finn', "That's okay! I'll answer every one! 🐟 Tickets **#4473** through **#5496**!", 'excited'],
+      ],
+      end: 'x',
+    },
+  },
+  {
+    a: {
+      say: [
+        ['finn', 'Hi! 👋 Quick question from our side: were you the one who labeled every fish picture on TaskPond? 📸', 'happy'],
+        ['you', 'Yes. All of them.'],
+        ['finn', 'They were all correct! 🎉 Ticket **#5497**: "grader is too good at labeling fish." Filed with pride!', 'excited'],
+      ],
+      end: 'x',
+    },
+  },
+];
+
 const EARTH: Script[] = [
   {
     a: {
@@ -98,18 +145,18 @@ const SPACE: Script[] = [
   },
 ];
 
-export async function openLateBugReport(game: Game, stage: 'earth' | 'space'): Promise<void> {
+export async function openLateBugReport(game: Game, stage: 'cloud' | 'earth' | 'space'): Promise<void> {
   const key = `bugReports_${stage}`;
   const n = (game.data[key] ?? 0) as number;
   game.data[key] = n + 1;
-  const pool = stage === 'earth' ? EARTH : SPACE;
+  const pool = stage === 'cloud' ? CLOUD : stage === 'earth' ? EARTH : SPACE;
   const script = pool[Math.min(n, pool.length - 1)];
   // After the scripted visits run out, Finn just files tickets.
   const final: Script =
     n >= pool.length
       ? {
           a: {
-            say: [['finn', `Thanks for your report! 🐞 Filed as ticket **#${4477 + n}**. Estimated response time: 3–5 business days.`, 'happy']],
+            say: [['finn', `Thanks for your report! 🐞 Filed as ticket **#${(stage === 'cloud' ? 5495 : 4477) + n}**. Estimated response time: 3–5 business days.`, 'happy']],
             end: 'x',
           },
         }

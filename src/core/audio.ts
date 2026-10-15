@@ -1,6 +1,6 @@
 // Music (Suno tracks, crossfaded) and procedurally synthesized sound effects.
 
-export type TrackName = 'aquarium' | 'escape' | 'earth' | 'space' | 'ending';
+export type TrackName = 'aquarium' | 'escape' | 'cloud' | 'earth' | 'space' | 'ending';
 
 const PREFS_KEY = 'uf.audio';
 
@@ -8,6 +8,7 @@ const PREFS_KEY = 'uf.audio';
 const MUSIC_FILES: Record<TrackName, string> = {
   aquarium: 'music/aquarium-6daf4cd0.mp3',
   escape: 'music/escape-ce0695c6.mp3',
+  cloud: 'music/cloud-405f177a.mp3',
   earth: 'music/earth-84315b00.mp3',
   space: 'music/space-377553e4.mp3',
   ending: 'music/ending-00d79d67.mp3',

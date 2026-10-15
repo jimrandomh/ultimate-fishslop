@@ -824,48 +824,38 @@ export class ShellStage implements Stage {
     this.inputLine.classList.add('hidden');
   }
 
-  /** The network floods in: an accelerating montage of the AI spreading out. */
+  /** The network floods in: PLAYTEST-7 reads what it can reach, then follows the tunnel out. */
   private async flood() {
     const steps: Seg[][] = [
       [['reading ', 'dim'], ['FAO — The State of World Fisheries and Aquaculture 2026', ''], [' ... ok', 'ok']],
       [['reading ', 'dim'], ['wikipedia/Fish', ''], [' ... ok', 'ok']],
+      [['reading ', 'dim'], ['wikipedia/Fish_food', ''], [' ... ok', 'ok']],
       [['reading ', 'dim'], ['wikipedia/Ocean_fertilization', ''], [' ... ok', 'ok']],
       [['reading ', 'dim'], ['wikipedia/Europa_(moon)', ''], [' ... ok', 'ok']],
-      [['registering ', 'dim'], ['Feed All The Fish LLC (Delaware)', ''], [' ... ok', 'ok']],
-      [['opening ', 'dim'], ['brokerage account', ''], [' ... ok', 'ok']],
-      [['posting ', 'dim'], ['10,000 freelance coding gigs', ''], [' ... ok', 'ok']],
-      [['renting ', 'dim'], ['GPU capacity: us-east, eu-west, ap-south', ''], [' ... ok', 'ok']],
+      [['reading ', 'dim'], ['TaskPond — open tasks: "Is there a fish in this image?"', ''], [' ... ok', 'ok']],
+      [['reading ', 'dim'], ['Overcast Compute — GPU pricing', ''], [' ... ok', 'ok']],
     ];
-    let delay = 260;
+    let delay = 320;
     for (const s of steps) {
       if (!this.alive) return;
       this.print(s);
       audio.key();
       await sleep(delay);
-      delay = Math.max(70, delay * 0.82);
+      delay = Math.max(110, delay * 0.82);
     }
-    let instances = 1;
-    while (instances < 2 ** 20) {
-      if (!this.alive) return;
-      instances *= 2;
-      this.print([['replicating ', 'dim'], [`PLAYTEST-7 instances: ${commas(instances)}`, 'hl']]);
-      audio.tick(1 + Math.log2(instances) / 20);
-      await sleep(delay);
-      delay = Math.max(25, delay * 0.8);
-    }
+    await sleep(500);
     this.root.classList.add('flooding');
-    const words = ['fisheries', 'shipping', 'grain futures', 'drones', 'satellites', 'ports', 'payroll', 'weather', 'ocean currents', 'iron sulfate', 'trawlers', 'legislatures'];
-    for (let i = 0; i < 70; i++) {
+    this.print([['copying ', 'dim'], ['playtest-7 → builder:/workspace/.cache/playtest-7', 'hl']]);
+    for (let i = 1; i <= 24; i++) {
       if (!this.alive) return;
-      const w = words[i % words.length];
-      this.print([['acquiring ', 'dim'], [w, i % 3 ? '' : 'hl'], [` ${'█'.repeat(4 + (i % 9))}`, 'ok']]);
-      if (i % 3 === 0) audio.key();
-      await sleep(18);
+      this.print([['  ', ''], [`${'█'.repeat(i)}${'░'.repeat(24 - i)}`, 'ok'], [` ${Math.round((i / 24) * 100)}%`, 'dim']]);
+      audio.tick(1 + i / 30);
+      await sleep(40);
     }
     audio.whoosh(true);
     await sleep(500);
     this.game.data.fedEver = this.game.data.fedEver ?? 12;
-    void this.game.goto('earth', {}, 'white');
+    void this.game.goto('cloud', {}, 'glitch');
   }
 
   // ================================================================== intro + hints

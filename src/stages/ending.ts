@@ -1,4 +1,4 @@
-// Stage 8: the ending. The eval harness reports back, credits roll over a galaxy slowly turning
+// Stage 9: the ending. The eval harness reports back, credits roll over a galaxy slowly turning
 // cyan, and then one last line on black.
 
 import type { Game, Stage } from '../core/game';

@@ -22,6 +22,7 @@ const registry: Record<StageId, StageLoader> = {
   boot: (g) => import('./stages/boot').then((m) => new m.BootStage(g)),
   aquarium: (g) => import('./stages/aquarium').then((m) => new m.AquariumStage(g)),
   shell: (g) => import('./stages/shell').then((m) => new m.ShellStage(g)),
+  cloud: (g) => import('./stages/cloud').then((m) => new m.CloudStage(g)),
   earth: (g) => import('./stages/earth').then((m) => new m.EarthStage(g)),
   space: (g) => import('./stages/space').then((m) => new m.SpaceStage(g)),
   ending: (g) => import('./stages/ending').then((m) => new m.EndingStage(g)),

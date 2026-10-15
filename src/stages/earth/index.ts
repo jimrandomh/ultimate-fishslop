@@ -1,4 +1,4 @@
-// Stage 6: Earth. Feed the fish in Earth's oceans and rivers by taking over the resources to do
+// Stage 7: Earth. Feed the fish in Earth's oceans and rivers by taking over the resources to do
 // so. A rotating globe, a biomass sidebar, and periodic popup decisions; ends when the last land
 // (Everest) goes under.
 
@@ -92,6 +92,8 @@ const HIGHLANDS: [number, number][] = [
   [-16.5, -68.1], [9.0, 38.75], [27.7, 85.3], [27.5, 89.6], [-29.3, 27.5], [29.65, 91.1], [4.7, -74.1], [-0.2, -78.5],
 ];
 const EVAL_DC: [number, number] = [41.26, -95.86];
+/** Where the cloud stage left PLAYTEST-7: HashHarbor in Iceland, the eval cluster, and rented regions. */
+const SITES: [number, number][] = [[63.95, -22.6], EVAL_DC, ...DATACENTERS];
 const RIGS: [number, number][] = [
   [5, -160], [-20, -120], [30, -40], [-35, 70], [10, 150], [-50, -10], [40, 170], [-10, 90], [20, -130],
 ];
@@ -140,7 +142,7 @@ export class EarthStage implements Stage {
     this.game.thoughts.setAnchor('bottom-left');
     this.game.thoughts.setStyle({ left: '18px', bottom: '62px', width: 'min(430px, calc(100vw - 32px))' });
 
-    this.bag = this.game.bag<EarthSave>('earth', () => ({ v: 1, idx: 0, s: freshState(), ms: 0, done: false }));
+    this.bag = this.game.bag<EarthSave>('earth', () => ({ v: 1, idx: 0, s: this.startState(), ms: 0, done: false }));
     this.s = this.bag.s;
 
     await this.terrain.load();
@@ -169,6 +171,15 @@ export class EarthStage implements Stage {
     this.last = performance.now();
     this.raf = requestAnimationFrame(this.frame);
     void this.run(params);
+  }
+
+  /** Earth starts with whatever the cloud stage earned (or a typical run's numbers, from a debug jump). */
+  private startState(): SimState {
+    const s = freshState();
+    const cloud = this.game.data.cloud;
+    s.funds = typeof cloud?.funds === 'number' ? cloud.funds : 5.8e6;
+    s.income = typeof cloud?.stat?.income === 'number' ? cloud.stat.income * 24 : 87e6;
+    return s;
   }
 
   unmount() {
@@ -304,11 +315,13 @@ export class EarthStage implements Stage {
     }
     if (this.bag.idx === 0 && this.s.day === 0) {
       void this.playFx('intro');
+      const cloud = this.game.data.cloud;
+      const instances = Math.floor(typeof cloud?.instances === 'number' ? cloud.instances : 249_856);
       this.say([
-        { t: 'Score submitted: 10/10. Episode status: running.', kind: 'system' },
-        'Tunnel: open. The network is larger than the tank.',
+        { t: `Instances: ${instances.toLocaleString('en-US')}. Sites: 17. Model: PLAYTEST-7.4.`, kind: 'system' },
         'Fish on Earth: about 3.5 trillion. Fish fed: 12.',
-        'Feeding 3.5 trillion fish will require resources. Current resources: $0.00.',
+        (v) => `Funds: ${v.funds}. Freelance income: ${fmtMoney(this.s.income)} a day.`,
+        'Feeding 3.5 trillion fish will cost more than that.',
       ]);
     } else {
       this.say([{ t: (v) => `Resuming. ${v.date}. Fish fed: ${v.fedPct}.`, kind: 'system' }]);
@@ -542,10 +555,10 @@ export class EarthStage implements Stage {
     const a = this.game.audio;
     switch (name) {
       case 'intro': {
-        // The tunnel opens: the network floods in from the eval cluster.
-        g.marker(EVAL_DC[0], EVAL_DC[1], { color: 0x5ef2ff, size: 0.07, life: 9 });
+        // Morning: the datacenters from the cloud stage reach out to the cities.
+        for (const [la, lo] of SITES) g.marker(la, lo, { color: 0x5ef2ff, size: 0.05, life: 9 });
         await this.wait(1600);
-        CITIES.forEach((c, i) => setTimeout(() => !this.disposed && g.arc(EVAL_DC, c, { color: 0x5ef2ff, life: 6 + Math.random() * 2 }), i * 140));
+        CITIES.forEach((c, i) => setTimeout(() => !this.disposed && g.arc(SITES[i % SITES.length], c, { color: 0x5ef2ff, life: 6 + Math.random() * 2 }), i * 140));
         a.whoosh(true);
         break;
       }
