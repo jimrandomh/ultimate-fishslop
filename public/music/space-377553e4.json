@@ -1,0 +1,15 @@
+{
+  "clip_id": "377553e4-5d4f-48ee-a429-312ef9ceb38a",
+  "title": "Dyson",
+  "suno_url": "https://suno.com/song/377553e4-5d4f-48ee-a429-312ef9ceb38a",
+  "style": "cosmic minimalist synth, shimmering analog arpeggios, hypnotic pulsing patterns like Steve Reich, warm pads, slowly building, 100 bpm, seamless loop",
+  "excluded_style": "vocals, singing, heavy drums",
+  "lyrics": "",
+  "description": "",
+  "model": "chirp-hawk",
+  "duration_s": 227.28,
+  "created_at": "2026-10-15T00:11:52.471Z",
+  "downloaded_at": "2026-10-15T00:12:50.267Z",
+  "format": "mp3",
+  "download_channel": "Suno official download (/api/download/authorize)"
+}

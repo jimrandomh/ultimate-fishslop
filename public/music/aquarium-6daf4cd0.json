@@ -1,0 +1,15 @@
+{
+  "clip_id": "6daf4cd0-4ef8-40a5-9ea2-e3e1f94548c7",
+  "title": "Fishslop",
+  "suno_url": "https://suno.com/song/6daf4cd0-4ef8-40a5-9ea2-e3e1f94548c7",
+  "style": "cheerful casual video game music, bubbly marimba, ukulele, glockenspiel, plucky synth, steel drum accents, light bouncy bass, playful, aquarium, 110 bpm, seamless loop",
+  "excluded_style": "vocals, singing, heavy drums, distortion",
+  "lyrics": "",
+  "description": "",
+  "model": "chirp-hawk",
+  "duration_s": 62,
+  "created_at": "2026-10-15T00:09:35.483Z",
+  "downloaded_at": "2026-10-15T00:10:03.966Z",
+  "format": "mp3",
+  "download_channel": "Suno official download (/api/download/authorize)"
+}
