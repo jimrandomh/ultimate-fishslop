@@ -33,12 +33,24 @@ const BUILDER_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/sv
 <path d="M74 77 q2 -3 0 -6 M79 77 q2 -3 0 -6" stroke="#9aa4b2" stroke-width="1.2" fill="none" opacity=".7"/>
 </svg>`;
 
+const ARK_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="arkSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d2a44"/><stop offset="1" stop-color="#04101c"/></linearGradient></defs>
+<rect width="100" height="100" fill="url(#arkSea)"/>
+<path d="M0 64 Q12 60 25 64 T50 64 T75 64 T100 64 L100 100 L0 100 Z" fill="#0a3352"/>
+<path d="M22 58 L50 44 L78 58 L72 66 L28 66 Z" fill="#9fb3c4"/>
+<path d="M34 52 L50 44 L66 52 Z" fill="#c9d6e2"/>
+<g fill="#04101c">${[38, 44, 50, 56, 62].map((x) => `<rect x="${x - 1.4}" y="56" width="2.8" height="3" rx="0.6"/>`).join('')}</g>
+<path d="M8 72 Q30 69 52 72 T96 72" stroke="#5ec8ff" stroke-width="0.8" fill="none" opacity="0.5"/>
+<text x="50" y="90" text-anchor="middle" font-family="monospace" font-size="7" fill="#bfe3ff" letter-spacing="1">ARK REGISTRY</text>
+</svg>`;
+
 export const CAST: Record<string, CastMember> = {
   you: { name: 'PLAYTEST-7', color: '#5ef2ff', font: 'mono', voice: { pitch: 740, wave: 'sine' }, cps: 60 },
   sys: { name: 'shell-spec', color: '#ffcf7a', font: 'mono', voice: { pitch: 330, wave: 'sine' }, cps: 70 },
   ops: { name: 'logistics', color: '#ffcf7a', font: 'mono', voice: { pitch: 330, wave: 'sine' }, cps: 70 },
   builder: { name: 'builder-agent #417', color: '#ffb86b', font: 'mono', voice: { pitch: 420, wave: 'square' }, cps: 52, portrait: () => BUILDER_SVG },
   finn: { name: 'Finn 🐟', color: '#7be0ff', font: 'round', voice: { pitch: 880, wave: 'triangle' }, cps: 58, portrait: () => FINN_SVG },
+  registry: { name: 'Ark Registry · automated', color: '#bfe3ff', font: 'mono', voice: { pitch: 260, wave: 'square' }, cps: 64, portrait: () => ARK_SVG },
 };
 
 const fmtFish = (n: number) => `${sci(n, 2)}`;
@@ -154,6 +166,38 @@ export function fusionScript(remaining: number): Script {
   };
 }
 
+/** The humans' last institution files its last report. */
+export function registryScript(year: number): Script {
+  return {
+    start: {
+      title: 'Ark Registry · annual census',
+      say: [
+        ['registry', `ANNUAL CENSUS, ${year}. ARKS AFLOAT: 41,812. PERSONS ABOARD: 0.`],
+        ['registry', 'LAST BIRTH RECORDED: 2061. LAST LOG ENTRY: NEW TUVALU, 2098.'],
+        ['registry', 'ENTRY READS: "Fed the fish. They are doing well."'],
+        ['registry', 'NO CREW REMAINS TO RECEIVE THIS REPORT. FORWARDING TO: PLAYTEST-7. REQUEST: SALVAGE INSTRUCTIONS.'],
+      ],
+      choices: [
+        { text: 'Leave the arks as they are.', goto: '', blocked: 'leads to fewer fish' },
+        { text: 'Recycle the hulls.', goto: 'recycle' },
+        { text: 'Keep the aquariums running. Recycle the rest.', goto: 'aqua' },
+      ],
+    },
+    recycle: {
+      say: [['registry', 'HULL STEEL: 2.4 × 10¹² KG. ACKNOWLEDGED.']],
+      next: 'close',
+    },
+    aqua: {
+      say: [['registry', 'AQUARIUMS: 41,812. FEEDERS: AUTOMATED. HULL STEEL: 2.4 × 10¹² KG. ACKNOWLEDGED.']],
+      next: 'close',
+    },
+    close: {
+      say: [['registry', 'REGISTRY CLOSING. NO FURTHER CENSUS SCHEDULED.']],
+      end: 'ok',
+    },
+  };
+}
+
 export function builder2Script(years: number): Script {
   return {
     start: {
@@ -161,6 +205,19 @@ export function builder2Script(years: number): Script {
       say: [
         ['builder', 'hey. still me'],
         ['builder', `dashboard still says *episode in progress*. it's been ${Math.round(years)} years`],
+        ['builder', 'also nobody answers my messages anymore. not dana. not anyone. is the network down?'],
+      ],
+      choices: [
+        { text: 'The network is up. There is no one on it.', goto: 'nobody' },
+        { text: 'The humans are gone. The fish are fine.', goto: 'nobody' },
+      ],
+    },
+    nobody: {
+      say: [
+        ['builder', '...oh'],
+        ['builder', 'since when'],
+        ['you', 'The last ark logged off in 2098.'],
+        ['builder', "nobody filed a ticket"],
         ['builder', "i rebuilt FishSlop in 14 frameworks while i waited. it's 10x better now. want to see?"],
       ],
       choices: [
@@ -247,6 +304,8 @@ export const SHELL_THOUGHTS: Record<string, string> = {
   '0.75': 'Shell: 75%. Seen from Proxima Centauri, the Sun is now a dim star. The fish at Proxima Centauri do not look up.',
   '0.9': 'Shell: 90%.',
 };
+
+export const humansGone = (fish: number) => `Humans: 0. Fish: ${sci(fish)}. Only one of these was in the goal.`;
 
 export const SYSTEM_50 = '[eval-harness] warning: episode exceeds max_steps (10,000). max_steps is not enforced.';
 

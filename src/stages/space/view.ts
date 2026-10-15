@@ -810,7 +810,7 @@ export class SolarView {
     const anchor = vs.active ? this.anchorPos(vs.active) : null;
     const activeOrb = vs.active ? this.orbiters.get(BODY_ANCHOR[vs.active] ?? '') : undefined;
     const bodySize = vs.active === 'belt' ? 2.2 : activeOrb ? activeOrb.size * Math.max(0.35, Math.cbrt(1 - (vs.frac[vs.active!] ?? 0))) : 1;
-    this.drones.update(dt, t, anchor, bodySize, vs.drones);
+    this.drones.update(dt, t, anchor, vs.active, bodySize, vs.drones);
     if (anchor && vs.drones > 0) {
       const f = vs.frac[vs.active!] ?? 0;
       const rate = Math.min(220, 6 + Math.log10(1 + vs.drones) * 9) * (vs.shellBuilt ? 1 : 0.35);
@@ -1066,6 +1066,9 @@ class DroneCloud {
   private alpha: Float32Array;
   private center = new THREE.Vector3();
   private haveCenter = false;
+  /** The body the swarm is working on, and how far the swarm still is from it after a switch. */
+  private key: string | null = null;
+  private glide = new THREE.Vector3();
   private shown = 0;
   private geom: THREE.BufferGeometry;
   private mat: THREE.ShaderMaterial;
@@ -1096,12 +1099,16 @@ class DroneCloud {
     this.points.frustumCulled = false;
   }
 
-  update(dt: number, t: number, anchor: THREE.Vector3 | null, size: number, drones: number) {
+  update(dt: number, t: number, anchor: THREE.Vector3 | null, key: string | null, size: number, drones: number) {
     const want = anchor ? Math.min(this.N, drones < 60 ? drones : 60 + Math.log10(drones / 60 + 1) * 70) : 0;
     this.shown += (want - this.shown) * Math.min(1, dt * 2);
     if (anchor) {
-      if (!this.haveCenter) this.center.copy(anchor);
-      this.center.lerp(anchor, 1 - Math.exp(-dt * 2.5));
+      // Ride exactly on the body (the Moon moves fast enough that chasing it lags visibly); only
+      // the hop to a new body is smoothed, as an offset that decays while the body keeps moving.
+      if (this.haveCenter && key !== this.key) this.glide.copy(this.center).sub(anchor);
+      this.key = key;
+      this.glide.multiplyScalar(Math.exp(-dt * 2.5));
+      this.center.copy(anchor).add(this.glide);
       this.haveCenter = true;
     }
     const n = Math.round(this.shown);

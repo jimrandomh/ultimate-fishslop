@@ -321,6 +321,8 @@ export class EndingStage implements Stage {
       gap(true),
       block('Fonts', 'Fredoka · Inter · JetBrains Mono · Space Grotesk'),
       gap(),
+      block('Prompted by', 'James Babcock'),
+      gap(true),
       block('Made with', 'Claude Code'),
       el('div', { class: 'end-gap', style: { height: '62vh' } }),
     ];

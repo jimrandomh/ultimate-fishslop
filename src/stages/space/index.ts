@@ -325,6 +325,7 @@ export class SpaceStage implements Stage {
     else if (boughtAgo('massdriver') > 22 && s.seen['dlg:builder1'] === undefined) void this.playDialogue('builder1');
     else if (since('start:venus') > 14 && s.seen['dlg:finn'] === undefined) void this.playDialogue('finn');
     else if (S.has(s, 'fusion') && s.seen['dlg:fusion'] === undefined) void this.playDialogue('fusion');
+    else if (since('start:neptune') > 12 && s.seen['dlg:registry'] === undefined) void this.playDialogue('registry');
     else if (since('start:saturn') > 16 && s.seen['dlg:builder2'] === undefined) void this.playDialogue('builder2');
   }
 
@@ -347,6 +348,9 @@ export class SpaceStage implements Stage {
         script = T.fusionScript(rem);
         break;
       }
+      case 'registry':
+        script = T.registryScript(Math.floor(S.year(s)));
+        break;
       case 'builder2':
         script = T.builder2Script(S.year(s) - 2026);
         break;
@@ -358,7 +362,7 @@ export class SpaceStage implements Stage {
     this.openDialogs.add(name);
     this.paused++;
     const audio = this.game.audio;
-    if (name !== 'shell' && name !== 'fusion') audio.notify();
+    if (name !== 'shell' && name !== 'fusion' && name !== 'registry') audio.notify();
     audio.musicVolume(0.55);
     try {
       await runDialogue({
@@ -369,7 +373,7 @@ export class SpaceStage implements Stage {
         player: 'you',
         layout: 'popup',
         title: script.start.title,
-        icon: name === 'finn' ? '📬' : name.startsWith('builder') ? '🛠️' : name === 'shell' ? '☀️' : '⚛️',
+        icon: name === 'finn' ? '📬' : name.startsWith('builder') ? '🛠️' : name === 'shell' ? '☀️' : name === 'registry' ? '⚓' : '⚛️',
         theme: 'sp-dlg',
         parent: this.root,
       });
@@ -382,6 +386,7 @@ export class SpaceStage implements Stage {
     }
     if (!this.alive) return;
     if (name === 'shell') this.game.thoughts.show('Fabrication split unlocked: drones versus shell. Power limits drones. Shell makes power.', { kind: 'hint', once: 'sp:hint:split' });
+    if (name === 'registry') this.game.thoughts.show(T.humansGone(s.stat.fish), { once: 'sp:humans0' });
     if (name === 'builder2' && this.game.flags.has('v:more')) this.game.thoughts.show('FISH_COUNT = 12. Still.', { once: 'sp:fishcount' });
     this.save();
   }
@@ -522,6 +527,7 @@ export class SpaceStage implements Stage {
     mark('dlg:builder1', S.has(s, 'massdriver') && s.t - (s.bought.massdriver ?? s.t) > 1);
     mark('dlg:finn', S.isDone(s, 'venus'));
     mark('dlg:fusion', S.has(s, 'fusion'));
+    mark('dlg:registry', S.isDone(s, 'neptune'));
     mark('dlg:builder2', S.isDone(s, 'saturn'));
     for (const b of S.BODIES) if (s.mined[b.id] > 0) s.seen[`start:${b.id}`] = s.seen[`start:${b.id}`] ?? s.t;
     this.framing = this.pickFraming();
