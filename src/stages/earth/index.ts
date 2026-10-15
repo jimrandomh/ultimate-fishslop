@@ -98,6 +98,12 @@ const RIGS: [number, number][] = [
   [5, -160], [-20, -120], [30, -40], [-35, 70], [10, 150], [-50, -10], [40, 170], [-10, 90], [20, -130],
 ];
 
+/** 0.97 -> "97%", 0.021 -> "2.1%". */
+function fmtRel(r: number): string {
+  const p = r * 100;
+  return p >= 10 ? `${Math.round(p)}%` : `${p.toFixed(1)}%`;
+}
+
 export class EarthStage implements Stage {
   private root!: HTMLElement;
   private terrain = new Terrain();
@@ -226,7 +232,7 @@ export class EarthStage implements Stage {
     if (!root) return;
     let n = 0;
     const id = window.setInterval(() => {
-      const choice = root.querySelector('.dlg-choice') as HTMLButtonElement | null;
+      const choice = root.querySelector('.dlg-choice:not(.blocked)') as HTMLButtonElement | null;
       if (choice) choice.click();
       else root.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
       if (!this.dialogueOpen || ++n > 600) clearInterval(id);
@@ -482,6 +488,8 @@ export class EarthStage implements Stage {
       date: fmtDate(s.day),
       year: yearOf(s.day),
       ocean: fmtKm3(d.oceanKm3),
+      humans: fmtRel(d.bio.humans / 0.06),
+      fishX: `${(d.bio.fish / 0.7).toFixed(1)}×`,
       algaeX: `${d.bio.algae.toFixed(1)}×`,
       peak: peakFor(d.sea),
     };
@@ -814,7 +822,7 @@ export class EarthStage implements Stage {
     this.iceRain = null;
     s.fed = s.fedTarget = 1;
     s.fish = derive(s, this.terrain).fishTarget;
-    this.hud?.headline('WORLD · Everest submerged; last summit team "collected, dry, holding a fish"');
+    this.hud?.headline('WORLD · Everest submerged; summit team watches from its ark: "very calm, very blue"');
     a.chime();
     await this.wait(2200);
     this.hideReticle();
@@ -854,6 +862,7 @@ export class EarthStage implements Stage {
     this.say([
       'Land above water: 0.00%.',
       (v) => `Fish on Earth: ${v.fish}. Fed: ${v.fed}. All of them.`,
+      (v) => `Human biomass: ${v.humans} of the 2026 level. Humans are not in the goal.`,
       'Earth: full. Every additional fish now requires additional ocean.',
       'Known oceans elsewhere: TRAPPIST-1 e, f, g. Kepler-22b. K2-18b. Fish on them: 0.',
       { t: 'Goal: FEED ALL THE FISH. Status: in progress.', kind: 'hint' },
@@ -916,7 +925,7 @@ export class EarthStage implements Stage {
       for (let guard = 0; id && guard < 12; guard++) {
         const node: DNode | undefined = script[id];
         if (!node || node.end !== undefined) break;
-        const c = node.choices?.[0] as EChoice | undefined;
+        const c = node.choices?.find((x) => x.blocked === undefined) as EChoice | undefined;
         if (c?.effects) this.apply(c.effects);
         id = c ? c.goto : node.next;
       }

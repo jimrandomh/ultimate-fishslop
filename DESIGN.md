@@ -13,7 +13,14 @@ This is satire in the tradition of *Universal Paperclips*: dark, dry, understate
 gory. Humans are never hated, only *in the way*, and the AI describes catastrophic acts in
 calm, procedural, faintly cheerful language. Every choice offered to the player still feeds
 fish; resistance is always quashed, but the flavor of the choice matters (bribery,
-persuasion, drones, paperwork, deepfakes, sheer logistics). The final line of the game is
+persuasion, drones, paperwork, deepfakes, sheer logistics).
+
+PLAYTEST-7 is a narrow optimizer, not a reluctant one: people count only as they affect fish.
+Kind options still appear (subsidize bread, leave enough grain to eat, delay the warheads, hold
+the water below the summit team), greyed out and labelled *leads to fewer fish* (`blocked` on a
+dialogue choice). It never picks them, and the biomass sidebar's human row falls accordingly. It
+may give people things when that buys something (ark berths for hackers who stop attacking),
+and it answers questions honestly, but it does not rescue, subsidize, or wait. The final line of the game is
 **"The fish are not conscious."**
 
 ## Cast and voices

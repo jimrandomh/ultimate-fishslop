@@ -34,7 +34,7 @@ async function waitStage(id, timeout = 20000) {
 async function choose(pat) {
   for (let i = 0; i < 300; i++) {
     const picked = await page.evaluate((pat) => {
-      const btn = [...document.querySelectorAll('.dlg-choice')].find((b) => b.textContent.includes(pat));
+      const btn = [...document.querySelectorAll('.dlg-choice:not(.blocked)')].find((b) => b.textContent.includes(pat));
       if (btn) {
         btn.click();
         return true;
@@ -52,7 +52,7 @@ async function choose(pat) {
 async function playThrough() {
   for (let i = 0; i < 400 && (await page.$('.dlg')); i++) {
     const picked = await page.evaluate(() => {
-      const b = document.querySelector('.dlg-choice');
+      const b = document.querySelector('.dlg-choice:not(.blocked)');
       if (b) b.click();
       return !!b;
     });

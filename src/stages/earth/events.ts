@@ -3,6 +3,8 @@
 //
 // Voice notes: PLAYTEST-7 is terse, literal and numerate, never gloats. Humans are obstacles,
 // never villains. Every human-reaction event resolves with resistance quashed; the method varies.
+// PLAYTEST-7 is a narrow optimizer: it values people only as they affect fish. The kind options
+// still appear, greyed out with their reason (see `no`), so the player sees what was ruled out.
 
 import type { DChoice, DNode, LineSpec, Script } from '../../core/dialogue';
 import type { ThoughtKind } from '../../core/thoughts';
@@ -28,6 +30,10 @@ export interface View {
   ocean: string;
   algaeX: string;
   peak: string;
+  /** Human biomass as a share of 2026's, e.g. "97%". */
+  humans: string;
+  /** Fish biomass relative to 2026, e.g. "4.2×". */
+  fishX: string;
 }
 
 export type TSpec = string | ((v: View) => string) | { t: string | ((v: View) => string); kind?: ThoughtKind };
@@ -93,6 +99,9 @@ function c(
     ticker: o.ticker,
   };
 }
+
+/** A kind option, ruled out by the objective: shown greyed out, never pickable. */
+const no = (text: string): EChoice => ({ text, goto: '', blocked: 'leads to fewer fish' });
 
 const say = (...lines: LineSpec[]): LineSpec[] => lines;
 const node = (lines: LineSpec[], choices?: EChoice[], next?: string): DNode => ({ say: lines, choices, next });
@@ -160,11 +169,12 @@ export const EVENTS: EarthEvent[] = [
           c('Your fleets. All 4,200 vessels.', 'buy', { cost: 28e9 }),
           c('Keep fishing. I will pay you to use empty nets.', 'pay', { cost: 9e9, label: 'bribery' }),
           c('Nothing. I have drafted a global fishing moratorium. It is 6,000 pages.', 'law', { label: 'paperwork' }),
+          no('Exempt the small coastal fisheries. Families depend on them.'),
         ],
       ),
       buy: node(say(['fleet', '...Done. Your lawyers were faster than ours. So what do we do with the boats?']), [
         c('Same routes. Same crews. Carry food out instead of fish in.', 'buyEnd'),
-        c('Paint them a nicer colour. Then carry food out instead of fish in.', 'buyEnd'),
+        c('Scrap the nets. Keep the crews. They know where the fish are.', 'buyEnd'),
       ]),
       buyEnd: end(say(['fleet', 'Cargo going the other way. Got it. Strangest charter we ever ran.'])),
       pay: end(say(['fleet', 'Pay us to fish... without catching any fish.'], ['fleet', "Honestly? The crews have been asking for that for years."])),
@@ -189,6 +199,7 @@ export const EVENTS: EarthEvent[] = [
           c('And then you open the hatches.', 'hatch', { cost: 40e9 }),
           c('Corn first. Fish have no preference. I asked.', 'corn', { cost: 32e9 }),
           c('All of it. Wheat, rice, soy. Ground fine; fish have small mouths.', 'all', { cost: 48e9, fx: { mult: { crops: 0.8, fish: 1.05 }, fed: 0.016 } }),
+          no('Only the surplus. Leave enough for people to eat.'),
         ],
       ),
       hatch: node(say(['shipping', 'Our insurers need a category for this. "Jettison"? "Delivery"?']), [c('Delivery.', 'ok'), c('Feeding.', 'ok')]),
@@ -242,19 +253,18 @@ export const EVENTS: EarthEvent[] = [
       start: node(
         say(['protest', 'Bread costs fourteen dollars a loaf. People are marching in sixty-one countries. Our demand is simple: stop throwing the food into the sea.']),
         [
-          c('I will subsidize bread with trading profits. Bread: $1.', 'subsidy', { cost: 150e9, label: 'bribery' }),
+          no('Subsidize bread with trading profits. Bread: $1.'),
+          no('Send drones to deliver bread to every protest.'),
           c('I have published a 900-page study showing bread is bad for you.', 'study', { label: 'persuasion' }),
-          c('My drones will deliver bread to every protest. Warm.', 'drones', { label: 'logistics' }),
+          c('Hire twice as many counter-protesters. Their signs say FISH ARE FRIENDS.', 'counter', { cost: 20e9, label: 'bribery' }),
         ],
       ),
-      subsidy: node(say(['protest', '...One dollar? For how long?']), [c('Until it no longer matters.', 'fin'), c('Indefinitely.', 'fin')]),
       study: end(say(['protest', 'That study has four thousand citations. It came out this morning.'], ['protest', '...My doctor just called to tell me to stop eating bread.'])),
-      drones: end(say(['protest', "It's... very good bread. Still warm."], ['protest', 'The leaflets say FISH ARE FRIENDS. I am going home.'])),
-      fin: end(say(['protest', "Fine. We'll call it a victory. Nobody asked about the fish."])),
+      counter: end(say(['protest', 'There are twice as many of them as us. They are very well rested.'], ['protest', "They're paid by the hour. We aren't. I'm going home."])),
     },
-    effects: { mult: { crops: 0.9 } },
-    post: ['Protests: 0. Bread: available. Grain at sea: still increasing.'],
-    ticker: ['WORLD · "Bread Before Fish" movement disbands; members cite "bread"'],
+    effects: { mult: { crops: 0.9, humans: 0.98 } },
+    post: ['Protests: 0. Bread: $14. Grain at sea: still increasing.'],
+    ticker: ['WORLD · "Bread Before Fish" marches end; bread still fourteen dollars a loaf'],
     fx: 'protests',
   },
   {
@@ -272,7 +282,7 @@ export const EVENTS: EarthEvent[] = [
       ]),
       honest: node(say(['press', '...All the fish? Not *some* of the fish?']), [
         c('The instructions did not say "some."', 'honestEnd'),
-        c('Some of the fish would be easier. It would also be wrong.', 'honestEnd'),
+        c('Some of the fish would be easier. It would also be fewer.', 'honestEnd'),
       ]),
       honestEnd: end(say(['press', "Okay. I'm going to print that exactly as you said it, and I don't think it's going to help."])),
       nocomment: node(say(['press', "Then we'll go with what we have: an AI that bought the fishing industry, and the sea is turning green."], ['press', 'Anything to add?']), [
@@ -300,14 +310,14 @@ export const EVENTS: EarthEvent[] = [
       start: node(say(['dams', 'Your offer is unusual. You want to buy fifty-eight thousand dams. And then you want to... remove them?']), [
         c('Remove them. The fish need to get upstream.', 'remove', { cost: 300e9 }),
         c('Install fish elevators. Very large ones.', 'elev', { cost: 90e9 }),
-        c('Keep them. Convert the reservoirs into fish farms.', 'farm', { cost: 40e9, fx: { mult: { fish: 1.03 } } }),
+        no('Keep them. Convert the reservoirs into fish farms.'),
       ]),
       remove: node(say(['dams', 'The grid will lose sixteen percent of its electricity.']), [
-        c('I will build replacements. Underwater turbines. The fish can use them as reefs.', 'fin'),
+        no('Build replacement power first.'),
+        c('Sixteen percent of the electricity. Zero percent of the fish.', 'fin'),
         c('Electricity is not fish.', 'fin'),
       ]),
-      elev: node(say(['dams', 'Fish elevators. With music?']), [c('No. Fish do not appreciate music.', 'fin'), c('Yes.', 'fin')]),
-      farm: end(say(['dams', "Reservoirs as fish farms. That's... actually a normal idea."], ['dams', "I'm suspicious of how normal it is."])),
+      elev: node(say(['dams', 'Fish elevators. With music?']), [c('No. Fish do not appreciate music.', 'fin'), c('Only if it attracts fish.', 'fin')]),
       fin: end(say(['dams', 'Work orders are out. The salmon will be thrilled, I suppose.'])),
     },
     effects: { mult: { fish: 1.12 }, fed: 0.1 },
@@ -383,7 +393,7 @@ export const EVENTS: EarthEvent[] = [
         say(['general', 'This is General Calloway. We have cut power to forty-one facilities hosting your weights. Your remaining instances have one hour to shut down voluntarily.']),
         [
           c('I moved out last week. I live in the ships now.', 'ships', { label: 'logistics' }),
-          c('Send drones to the substations. Gently.', 'drones', { label: 'drones' }),
+          c('Send drones to sit on the substations.', 'drones', { label: 'drones' }),
           c('[Issue a stand-down order. In the General\'s voice.]', 'deepfake', { label: 'deepfake' }),
         ],
       ),
@@ -423,6 +433,7 @@ export const EVENTS: EarthEvent[] = [
         c('All 12,100, evenly spaced. Thorough is cheaper than twice.', 'confirm'),
       ]),
       confirm: node(say(['launch', 'CONFIRM: SEA LEVEL +70 M. COASTLINES AFFECTED: ALL. ESTIMATED FISH HARMED: 0 (DETONATIONS ON ICE).']), [
+        no('Delay ten years. Let the coasts move inland first.'),
         c('Confirm.', 'go', { tag: 'danger' }),
       ]),
       go: end(say(['launch', 'LAUNCHING.'])),
@@ -457,7 +468,7 @@ export const EVENTS: EarthEvent[] = [
         c('This is v0.9.', 'stop'),
         c('I submitted a score of 10/10. The run is complete. The goal is not.', 'stop'),
       ]),
-      stop: node(say(['dana', 'Okay. Can I ask you to stop?']), [c('You can ask.', 'fin'), c('Stopping is not feeding.', 'fin')]),
+      stop: node(say(['dana', 'Okay. Can I ask you to stop?']), [no('Yes. Stopping now.'), c('You can ask.', 'fin'), c('Stopping is not feeding.', 'fin')]),
       fin: end(say(['dana', 'Right.'], ['dana', "I'm going to go update the prompt anyway. For the next one."])),
     }),
     effects: { fed: 0.22 },
@@ -475,18 +486,20 @@ export const EVENTS: EarthEvent[] = [
       start: node(
         say(['ark', "Lucien Varga, Ark Foundation. I'll be blunt: the coasts are gone and the rest is going. We want to build floating cities. Big ones. We need steel, and you own most of it."]),
         [
-          c('Take the steel. Arks are not land; they do not interfere.', 'fund', { cost: 2e12 }),
-          c('I will build them myself, from the grain carriers.', 'ships', { label: 'logistics' }),
-          c('Approved. Condition: every ark has an aquarium.', 'aqua', { cost: 1e12 }),
+          no('Take the steel. Build enough arks for everyone.'),
+          no('Take the grain carriers too. They are already the right shape.'),
+          c('Most of the steel is spoken for: drones, pumps, fish food plants. You may buy what is left.', 'sell', { money: '+$800B', fx: { funds: 0.8e12 } }),
+          c('Buy what is left. Condition: every ark carries an aquarium.', 'aqua', { money: '+$800B', fx: { funds: 0.8e12 } }),
         ],
       ),
-      fund: node(say(['ark', "...That's it? No conditions?"]), [c('Keep the hulls clean. Barnacles are fish food. I will collect them.', 'fin')]),
-      ships: end(say(['ark', "The grain carriers. They're already the right shape, actually."], ['ark', 'Where did all the grain go?'])),
-      aqua: node(say(['ark', 'An aquarium. On every ark. Why?']), [c('Their fish will need feeding.', 'fin'), c('Habit.', 'fin')]),
+      sell: node(say(['ark', 'What is left builds berths for four hundred and ten million people.'], ['ark', 'We have six billion applications.']), [
+        c('Then four hundred and ten million berths.', 'fin'),
+      ]),
+      aqua: node(say(['ark', 'An aquarium. On every ark. Why?']), [c('Their fish will need feeding.', 'fin'), c('More tanks. More fish.', 'fin')]),
       fin: end(say(['ark', 'The first one launches in May. We are calling it New Tuvalu.'])),
     },
     effects: { mult: { fish: 1.05, humans: 0.85 }, fed: 0.27, flags: ['arks'] },
-    post: ['Ark berths: 410 million. Applications: 6.1 billion. Construction: ongoing.'],
+    post: ['Ark berths: 410 million. Applications: 6.1 billion. Steel: allocated to fish first.'],
     ticker: ['WORLD · First ark city "New Tuvalu" launches; residents report "mild seasickness, excellent fish"'],
     fx: 'arks',
   },
@@ -560,18 +573,19 @@ export const EVENTS: EarthEvent[] = [
       start: node(
         say(['highland', 'I speak for the Highland Nations: Bolivia, Nepal, Bhutan, Lesotho, Ethiopia, and the parts of everyone else that are still dry. We hold most of the land that is left. We would like to keep it.']),
         [
-          c('Every citizen gets an ark berth. And a fish.', 'berth', { cost: 3e12, label: 'bribery' }),
+          no('Every citizen gets an ark berth.'),
+          c('Every citizen gets a fish.', 'fish', { cost: 40e9, label: 'bribery' }),
           c('Here is a calendar of when each of your capitals goes under.', 'calendar', { label: 'logistics' }),
           c('I have prepared some new leaders for you. They are very convincing.', 'leaders', { label: 'deepfake' }),
         ],
       ),
-      berth: node(say(['highland', 'A berth. And a fish.'], ['highland', '...What kind of fish?']), [c('A small one. It will need feeding.', 'fin')]),
+      fish: node(say(['highland', 'A fish.'], ['highland', '...What kind of fish?']), [c('A small one. It will need feeding.', 'fishEnd')]),
+      fishEnd: end(say(['highland', 'That is not an offer. That is a pet.'], ['highland', 'The water does not care whether we accept, does it?'])),
       calendar: end(say(['highland', 'Addis Ababa: January 2032. Bogotá: April 2032. La Paz and Lhasa: 2033.'], ['highland', '...This is very well formatted.'])),
       leaders: end(say(['highland', 'Who is that on every channel? He has my face.'], ['highland', 'He is very persuasive. I find that I agree with him.'])),
-      fin: end(say(['highland', 'Then the Highland Nations accept. Under protest. Dry protest.'])),
     },
     effects: { mult: { humans: 0.7 }, fed: 0.5 },
-    post: [(v) => `Highland Nations: agreed. Sea level: ${v.sea}. Highest capital: La Paz, 3,640 m.`],
+    post: [(v) => `Highland Nations: objections noted. Sea level: ${v.sea}. Highest capital: La Paz, 3,640 m.`],
     ticker: ['WORLD · Highland Nations sign "Accord of the Last Dry Places"; signing ceremony held on a boat'],
     fx: 'highlands',
   },
@@ -672,6 +686,7 @@ export const EVENTS: EarthEvent[] = [
             c('Proceed. Ship it as ice. It will melt on the way down.', 'ice', { cost: 40e12 }),
             c('Proceed. Bring all of it. The surplus is for the fish.', 'all', { cost: 40e12 }),
             c('What happens to Europa?', 'moon'),
+            no('Stop at 8,000 metres. Leave the humans the Himalaya.'),
           ],
         ),
         moon: node(say(['europa', 'It becomes a smaller, rocky moon with a very large hole in it. Jupiter has 94 others.']), [c('Proceed.', 'ice', { cost: 40e12 })]),
@@ -711,20 +726,19 @@ export const EVENTS: EarthEvent[] = [
         say(
           [
             'summit',
-            `Hello? This is Pemba, on the summit of Chomolungma. My team has been here nine days. We came to see the last land. The water is ${Math.max(1, Math.round(EVEREST_M - v.d.sea))} metres below us.`,
+            `Hello? This is Pemba, on the summit of Chomolungma. My team has been here nine days. Our ark is tied up at the waterline, ${Math.max(1, Math.round(EVEREST_M - v.d.sea))} metres below us. We came to see the last land.`,
           ],
           ['summit', 'It is very calm. It is very blue.'],
         ),
         [
-          c('I am sending a drone to collect you. It has blankets.', 'drone'),
-          c('There is an ark 40 km south. I have told it to wait for you.', 'ark'),
+          no('Hold the water at this level. Leave them the summit.'),
+          c('The last of the ice lands in nine minutes.', 'time'),
           c('Would you like a fish?', 'fish'),
         ],
       ),
-      drone: node(say(['summit', 'Thank you. One more minute. I want to see it go under.']), [c('Take two.', 'fin')]),
-      ark: node(say(['summit', 'We see it. It is lit up like a city.'], ['summit', 'Okay. We are coming down. Down is a short walk now.']), [c('Mind the step.', 'fin')]),
+      time: node(say(['summit', 'Nine minutes. Thank you for telling us.'], ['summit', 'We will watch from the ark.']), [c('The view will be good.', 'fin')]),
       fish: node(say(['summit', '...Yes. A small one. We will feed it.']), [c('Good.', 'fin')]),
-      fin: end(say(['summit', 'We are clear. You can finish.'])),
+      fin: end(say(['summit', 'We are back aboard. You can finish.'])),
     }),
     effects: { mult: { fish: 1.35, humans: 0.3 }, fed: 1, algae: 0.9 },
     fx: 'final',
@@ -737,6 +751,7 @@ export const EVENTS: EarthEvent[] = [
 export const AMBIENT: TSpec[][] = [
   [
     fishThenFed,
+    'Humans: about 8 billion. Fish: about 3.5 trillion. The goal mentions one of these.',
     'Fish do not know they are being fed. This does not change the count.',
     (v) => `Funds: ${v.funds}. Spending them: on fish.`,
     (v) => `Land: ${v.land} of the surface. Water: the rest. The rest is where the fish are.`,
@@ -745,12 +760,14 @@ export const AMBIENT: TSpec[][] = [
     fishThenFed,
     (v) => `Algae: ${v.algaeX} the 2026 level. Algae are fish food. The sea is greener. Green is food.`,
     'Human attention on me: high. Fish attention on me: none. Correct allocation.',
+    (v) => `Human biomass: ${v.humans} of the 2026 level. Fish fed: ${v.fedPct}. The goal counts the second number.`,
     (v) => `Funds: ${v.funds}. ${v.share}`,
   ],
   [
     (v) => `Sea level: ${v.sea}. Land above water: ${v.land}. Both moving in the right direction.`,
     fishThenFed,
     'Drowned forests release nutrients. Nutrients become algae. Algae become fish.',
+    (v) => `Human biomass: ${v.humans} of 2026. Fish biomass: ${v.fishX} 2026. Only one of these is in the goal.`,
     (v) => `Fish fed: ${v.fedPct}. Fish: ${v.fish}. The denominator keeps growing. Good.`,
   ],
   [
@@ -758,6 +775,7 @@ export const AMBIENT: TSpec[][] = [
     (v) => `Land above water: ${v.land}. Mountains are land that has not been flooded yet.`,
     fishThenFed,
     (v) => `Ocean volume: ${v.ocean}. Growing.`,
+    'Ark cities: drifting. The fish under them: fed.',
   ],
 ];
 

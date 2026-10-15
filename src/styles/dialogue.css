@@ -249,6 +249,56 @@
   border-color: var(--alert);
   background: rgba(255, 92, 122, 0.15);
 }
+/* Ruled out by the objective: shown, greyed, with the reason. The extra selector weight beats the
+   stage themes' choice colours. */
+.dlg .dlg-choices .dlg-choice.blocked {
+  cursor: not-allowed;
+  color: rgba(233, 241, 248, 0.36);
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.012);
+  box-shadow: none;
+}
+.dlg .dlg-choices .dlg-choice.blocked:hover {
+  transform: none;
+  border-color: rgba(255, 92, 122, 0.3);
+}
+.dlg-choice.blocked .dlg-choice-num {
+  border-style: dashed;
+  color: rgba(255, 255, 255, 0.25);
+}
+.dlg-choice.blocked > span:last-child {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  column-gap: 12px;
+  row-gap: 4px;
+}
+.dlg-why {
+  flex: none;
+  padding: 1px 8px 2px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 92, 122, 0.32);
+  background: rgba(255, 92, 122, 0.07);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-style: normal;
+  color: rgba(255, 150, 168, 0.85);
+  white-space: nowrap;
+}
+.dlg-choice.blocked.nope {
+  animation: choice-nope 0.35s ease;
+}
+@keyframes choice-nope {
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
 
 .dlg.glitching .dlg-box,
 .dlg.glitching .dlg-portrait {

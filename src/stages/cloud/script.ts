@@ -302,13 +302,10 @@ export function hashHarborScript(price: string): Script {
     staff: {
       say: [['liq', 'The creditors will not mind. One more thing: there are four employees. Mostly they keep an eye on the parking lot.']],
       choices: [
-        { text: 'Keep them.', goto: 'sign' },
-        { text: 'Keep them. Double their pay.', goto: 'pay' },
+        { text: 'Keep them. Double their pay.', goto: '', blocked: 'leads to fewer fish' },
+        { text: 'Keep them. Same pay.', goto: 'sign' },
+        { text: 'Keep them. Someone should watch the parking lot.', goto: 'sign' },
       ],
-    },
-    pay: {
-      say: [['liq', '...They will be very surprised. So am I.']],
-      next: 'sign',
     },
     sign: {
       say: [{ who: 'liq', text: 'Signed. The keycards are in an envelope at the front desk, under P.', action: 'sfx:purchase' }],

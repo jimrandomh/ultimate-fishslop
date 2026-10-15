@@ -6,7 +6,7 @@
 // or ends the dialogue with `end` (the value runDialogue resolves with).
 
 import { audio } from './audio';
-import { el, richText, sleep } from './dom';
+import { el, escapeHtml, richText, sleep } from './dom';
 import { typeInto } from './typewriter';
 
 export interface CastMember {
@@ -45,6 +45,8 @@ export interface DChoice {
   echo?: string | false;
   /** Styling hook: 'jailbreak' | 'action' | 'exit' | 'danger' | anything (becomes a CSS class). */
   tag?: string;
+  /** Shown greyed out and unpickable, with this reason beside it (e.g. "leads to fewer fish"). */
+  blocked?: string;
 }
 
 export interface DNode {
@@ -197,7 +199,7 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
       e.stopPropagation();
       poke();
     } else if (/^[1-9]$/.test(e.key)) {
-      const btn = choices.querySelectorAll<HTMLButtonElement>('.dlg-choice')[Number(e.key) - 1];
+      const btn = choices.querySelectorAll<HTMLButtonElement>('.dlg-choice:not(.blocked)')[Number(e.key) - 1];
       if (btn) {
         e.preventDefault();
         e.stopPropagation();
@@ -289,22 +291,34 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
     return new Promise((resolve) => {
       choices.innerHTML = '';
       advance.classList.remove('ready');
+      let num = 0;
       list.forEach((c, i) => {
-        const btn = el(
+        // Blocked choices stay on screen, unnumbered, so the player sees what was ruled out.
+        const blocked = c.blocked !== undefined;
+        const label = richText(fill(c.text)) + (blocked ? ` <span class="dlg-why">${escapeHtml(c.blocked!)}</span>` : '');
+        const btn: HTMLButtonElement = el(
           'button',
           {
-            class: `dlg-choice ${c.tag ? `tag-${c.tag}` : ''}`,
+            class: `dlg-choice ${c.tag && !blocked ? `tag-${c.tag}` : ''} ${blocked ? 'blocked' : ''}`,
+            attrs: blocked ? { 'aria-disabled': 'true' } : {},
             on: {
               click: () => {
+                if (blocked) {
+                  audio.denied();
+                  btn.classList.remove('nope');
+                  void btn.offsetWidth;
+                  btn.classList.add('nope');
+                  return;
+                }
                 audio.click();
                 choices.innerHTML = '';
                 box.classList.remove('choosing');
                 resolve(c);
               },
-              mouseenter: () => audio.hover(),
+              mouseenter: () => !blocked && audio.hover(),
             },
           },
-          [el('span', { class: 'dlg-choice-num', text: String(i + 1) }), el('span', { html: richText(fill(c.text)) })],
+          [el('span', { class: 'dlg-choice-num', text: blocked ? '–' : String(++num) }), el('span', { html: label })],
         );
         btn.style.animationDelay = `${i * 50}ms`;
         choices.append(btn);
@@ -329,7 +343,8 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
       for (const l of node.say ?? []) await speak(normLine(l));
       if (node.end !== undefined) return node.end;
       const visible = (node.choices ?? []).filter((c) => choiceVisible(c, cfg.flags, cfg.ns));
-      if (visible.length) {
+      if (visible.length && visible.every((c) => c.blocked !== undefined)) console.warn(`[dialogue] node "${id}" offers only blocked choices`);
+      if (visible.some((c) => c.blocked === undefined)) {
         const c = await showChoices(visible);
         cfg.onChoice?.(c, id);
         c.set?.forEach((f) => cfg.flags.add(f));
