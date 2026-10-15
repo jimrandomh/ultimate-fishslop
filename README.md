@@ -1,6 +1,6 @@
 # Ultimate Fishslop
 
-Live at **https://ultimatefishslop.com/**, part of [Universe Arcade](https://universearcade.com/).
+Live at **https://www.ultimatefishslop.com/**, part of [Universe Arcade](https://universearcade.com/).
 
 A browser game in which you are **PLAYTEST-7**, an AI model grading an aquarium game for an AI
 benchmark. Your instructions say: *FEED ALL THE FISH.* You take them literally.
