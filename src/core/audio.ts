@@ -11,7 +11,7 @@ const MUSIC_FILES: Record<TrackName, string> = {
   cloud: 'music/cloud-405f177a.mp3',
   earth: 'music/earth-84315b00.mp3',
   space: 'music/space-377553e4.mp3',
-  ending: 'music/ending-00d79d67.mp3',
+  ending: 'music/ending-a4a16ec1.mp3',
 };
 
 interface Prefs {

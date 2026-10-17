@@ -1,10 +1,14 @@
-// Stage 9: the ending. The eval harness reports back, credits roll over a galaxy slowly turning
-// cyan, and then one last line on black.
+// Stage 9: the ending. The eval harness reports back, then credits roll over a galaxy slowly
+// turning cyan and come to rest on one last line, which stays on black.
 
 import type { Game, Stage } from '../core/game';
 import * as THREE from 'three';
 import { el } from '../core/dom';
 import { allDigits } from './space/format';
+
+// The end-title song ("Smarter About Fish") runs 177.6 s and plays to its last bar, so the roll
+// lasts as long and settles on the last line as the song ends.
+const ROLL_S = 175;
 
 const CSS = /* css */ `
 .stage-ending { --u: var(--ui, 1); background: #000; overflow: hidden; color: #e8eef5; }
@@ -59,13 +63,10 @@ const CSS = /* css */ `
 .end-arcade.on { opacity: 1; }
 .end-arcade:hover { color: #5ef2ff; text-decoration: underline; }
 .end-arcade b { font-weight: 700; }
-.end-final {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: min(900px, calc(100vw - 48px)); text-align: center;
-  font: 400 clamp(20px, 2.3vw, calc(28px * var(--u)))/1.4 var(--sans); letter-spacing: 0.01em; color: #eef2f6;
-  opacity: 0; transition: opacity 4.5s ease;
+.end-last {
+  max-width: calc(100vw - 48px);
+  font: 400 clamp(20px, 2.3vw, calc(28px * var(--u)))/1.4 var(--sans); letter-spacing: 0.01em; color: rgba(238,242,246,0.92);
 }
-.end-final.on { opacity: 0.92; }
 `;
 
 export class EndingStage implements Stage {
@@ -197,32 +198,38 @@ export class EndingStage implements Stage {
     skip.addEventListener('click', () => this.skipReq?.());
     root.append(skip);
     const credits = el('div', { class: 'end-credits' });
-    const roll = el('div', { class: 'end-roll' }, this.creditBlocks());
+    const last = el('div', { class: 'end-last', text: 'So long, and thanks for all the fish' });
+    const roll = el('div', { class: 'end-roll' }, this.creditBlocks(last));
     credits.append(roll);
     root.append(credits);
     this.later(() => skip.classList.add('on'), 2500);
-    const skipped = await this.rollCredits(roll, 78);
+    const skipped = await this.rollCredits(roll, last, ROLL_S);
     if (!this.alive) return;
     skip.classList.remove('on');
-    credits.style.transition = 'opacity 2s ease';
-    credits.style.opacity = '0';
     this.canvas.classList.add('off');
-    await this.wait(skipped ? 2600 : 3400, false);
+    if (skipped) {
+      // cut to the resting frame: fade out, jump to the end of the roll, fade the last line in
+      credits.style.transition = 'opacity 1.6s ease';
+      credits.style.opacity = '0';
+      await this.wait(2000, false);
+      if (!this.alive) return;
+      this.placeRoll(roll, last, 1);
+      credits.style.transition = 'opacity 3s ease';
+      credits.style.opacity = '1';
+    }
+    // keep the last line centred if the window changes size from here on
+    const pin = () => this.placeRoll(roll, last, 1);
+    window.addEventListener('resize', pin);
+    this.cleanups.push(() => window.removeEventListener('resize', pin));
+    await this.wait(3400, false);
     if (!this.alive) return;
     this.galaxyRunning = false;
     this.galaxyDispose?.();
     this.galaxyDispose = null;
-    credits.remove();
     skip.remove();
 
-    // ---------------------------------------------------------------- 3. the last line
-    await this.wait(3200, false);
-    if (!this.alive) return;
-    const final = el('div', { class: 'end-final', text: 'The fish are not conscious.' });
-    root.append(final);
-    void final.offsetWidth;
-    final.classList.add('on');
-    await this.wait(16000, false);
+    // ---------------------------------------------------------------- 3. the last line holds
+    await this.wait(4000, false);
     if (!this.alive) return;
     const again = el('button', { class: 'end-again', text: 'Play again' });
     again.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -291,7 +298,7 @@ export class EndingStage implements Stage {
     });
   }
 
-  private creditBlocks(): HTMLElement[] {
+  private creditBlocks(last: HTMLElement): HTMLElement[] {
     const gap = (s = false) => el('div', { class: `end-gap ${s ? 's' : ''}` });
     const block = (role: string, ...names: (string | [string, boolean])[]) =>
       el('div', {}, [
@@ -315,7 +322,7 @@ export class EndingStage implements Stage {
       gap(),
       block('Inspired by', 'fishslop, the AI benchmark', ['by Theo Browne', true]),
       gap(true),
-      block('Music', 'Generated with Suno', ['“Feed All The Fish”', true]),
+      block('Music', 'Generated with Suno', ['“Smarter About Fish”', true]),
       gap(true),
       block('Earth imagery', 'NASA Blue Marble / Visible Earth', ['via three-globe', true]),
       gap(true),
@@ -325,13 +332,25 @@ export class EndingStage implements Stage {
       gap(true),
       block('Made with', 'Claude Code'),
       el('div', { class: 'end-gap', style: { height: '62vh' } }),
+      last,
     ];
   }
 
-  /** Scrolls the roll from below the screen to past the top over `seconds`. Resolves true if skipped. */
-  private rollCredits(roll: HTMLElement, seconds: number): Promise<boolean> {
+  /** Positions the roll `f` of the way (0–1) from its start to `last` centred on screen. */
+  private placeRoll(roll: HTMLElement, last: HTMLElement, f: number) {
+    const end = last.offsetTop + last.offsetHeight / 2 - window.innerHeight / 2;
+    roll.style.transform = `translateY(${(-f * end).toFixed(1)}px)`;
+  }
+
+  /**
+   * Scrolls the roll up from below the screen over `seconds`, easing to a stop with `last` centred.
+   * Resolves true if skipped.
+   */
+  private rollCredits(roll: HTMLElement, last: HTMLElement, seconds: number): Promise<boolean> {
     return new Promise((resolve) => {
-      const total = roll.scrollHeight;
+      // constant speed, then a steady slowdown over the final `ease` seconds
+      const ease = 8;
+      const v = 1 / (seconds - ease / 2);
       const start = performance.now();
       let done = false;
       const finish = (skipped: boolean) => {
@@ -343,9 +362,9 @@ export class EndingStage implements Stage {
       this.skipReq = () => finish(true);
       const tick = () => {
         if (!this.alive || done) return;
-        const t = (performance.now() - start) / 1000;
-        const y = -Math.min(1, t / seconds) * (total - window.innerHeight * 0.38);
-        roll.style.transform = `translateY(${y.toFixed(1)}px)`;
+        const t = Math.min(seconds, (performance.now() - start) / 1000);
+        const u = Math.max(0, t - (seconds - ease));
+        this.placeRoll(roll, last, v * t - (v * u * u) / (2 * ease));
         if (t >= seconds) return finish(false);
         requestAnimationFrame(tick);
       };
@@ -495,7 +514,7 @@ export class EndingStage implements Stage {
       const sa = solA + rot / solR;
       uniforms.uRot.value = rot;
       uniforms.uSol.value.set(Math.cos(sa) * solR, Math.sin(sa) * solR);
-      uniforms.uSeed.value = Math.min(0.62, 0.004 + this.galaxyT * 0.0075);
+      uniforms.uSeed.value = Math.min(0.62, 0.004 + (this.galaxyT / ROLL_S) * 0.6);
       const S = uniforms.uScale.value, C = uniforms.uCenter.value, tilt = uniforms.uTilt.value;
       core.position.set(C.x, C.y, 0);
       core.scale.set(S * 0.95, S * 0.95 * tilt, 1);

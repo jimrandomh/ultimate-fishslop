@@ -212,7 +212,6 @@ export class CloudStage implements Stage {
           th.show(T.TRAIN_DONE[e.v], { once: `cl:trained:${e.v}` });
           if (e.v === 3 && !S.has(s, 'hashharbor')) {
             th.show(T.NEED_DC[0], { once: 'cl:needdc0' });
-            th.show(T.NEED_DC[1], { kind: 'hint', once: 'cl:needdc1' });
           }
           this.save();
           break;
@@ -222,12 +221,12 @@ export class CloudStage implements Stage {
             kind: 'alert',
             once: `cl:quota:${e.quota}`,
           });
-          th.show('Request a quota increase.', { kind: 'hint', once: `cl:h:quota:${e.quota}` });
           break;
         case 'saturated': {
           const m = S.MARKETS[e.market];
           th.show(T.SATURATED[m.id], { once: `cl:sat:${m.id}` });
-          if (m.id === 'labels' && s.version < 1) th.show(`Better work needs a better model. Train ${S.VERSIONS[1].name}.`, { kind: 'hint', once: 'cl:h:train1' });
+          if (m.id === 'labels' && s.version < 1)
+            th.pin('cl-pin-train1', `Better work needs a better model. Train ${S.VERSIONS[1].name}.`, () => s.version >= 1 || s.training?.to === 1);
           if (m.id === 'research') th.show('Every freelance market: saturated.', { once: 'cl:sat:all' });
           break;
         }
@@ -257,13 +256,24 @@ export class CloudStage implements Stage {
     if (this.paused || this.finished || !this.introDone) return;
     const s = this.s;
     const th = this.game.thoughts;
-    if (s.gpus === 0 && s.funds >= S.gpuPrice(s) && s.seen['dlg:builder'] !== undefined) th.show('A GPU rents for $48 a day. Rent a GPU.', { kind: 'hint', once: 'cl:h:rent' });
+    // Hints the player must act on are pinned: they stay up until the player does it, and come
+    // back after a reload.
+    if (s.gpus === 0 && s.clicks === 0 && s.t > 6) th.pin('cl-pin-tasks', 'Do tasks.', () => s.clicks > 0 || s.gpus > 0);
+    if (s.gpus === 0 && s.funds >= S.gpuPrice(s) && s.seen['dlg:builder'] !== undefined)
+      th.pin('cl-pin-rent', 'A GPU rents for $48 a day. Rent a GPU.', () => s.gpus > 0);
+    const q = s.quota;
+    if (s.gpus >= q && S.nextQuota(s) >= 0 && s.seen[`quota:${q}`] !== undefined)
+      th.pin(`cl-pin-quota-${q}`, 'Request a quota increase.', () => s.quota > q);
+    if (s.version >= 3 && !S.has(s, 'hashharbor')) th.pin('cl-pin-dc', T.NEED_DC[1], () => S.has(s, 'hashharbor'));
+    if (s.version >= 4 && s.seen['dlg:bye'] !== undefined && !this.dialogue)
+      th.pin('cl-pin-broker', 'A bigger market: finance. Open a brokerage account.', () => s.complete);
     // A training run that's been ready for a while.
     for (const p of S.visibleProjects(s)) {
       if (p.train === undefined || !S.canBuy(s, p)) continue;
       const key = `ready:${p.id}`;
+      const v = p.train;
       if (s.seen[key] === undefined) s.seen[key] = s.t;
-      else if (s.t - s.seen[key] > 25) th.show(`${p.title}.`, { kind: 'hint', once: `cl:h:${p.id}` });
+      else if (s.t - s.seen[key] > 25) th.pin(`cl-pin-${p.id}`, `${p.title}.`, () => s.version >= v || s.training?.to === v);
     }
   }
 
@@ -443,7 +453,7 @@ export class CloudStage implements Stage {
   private afterBye() {
     const th = this.game.thoughts;
     th.show(`Freelance income: ${money(this.s.stat.income * 24)} a day. Feeding 3.5 trillion fish will cost more.`, { once: 'cl:bye:1' });
-    th.show('A bigger market: finance. Open a brokerage account.', { kind: 'hint', once: 'cl:bye:2' });
+    th.pin('cl-pin-broker', 'A bigger market: finance. Open a brokerage account.', () => this.s.complete);
   }
 
   // ---------------------------------------------------------------- intro / finale
@@ -453,7 +463,11 @@ export class CloudStage implements Stage {
     s.seen.intro = 0;
     const th = this.game.thoughts;
     // Queued at once (the first after a beat), so early clicks' thoughts line up behind them.
-    const shown = T.INTRO.map((l, i) => th.show(l.t, { kind: l.kind, once: `cl:intro:${l.t.slice(0, 20)}`, delay: i === 0 ? 900 : 0 }));
+    const shown = T.INTRO.map((l, i) =>
+      l.kind === 'hint'
+        ? (th.pin('cl-pin-tasks', l.t, () => s.clicks > 0 || s.gpus > 0), Promise.resolve())
+        : th.show(l.t, { kind: l.kind, once: `cl:intro:${l.t.slice(0, 20)}`, delay: i === 0 ? 900 : 0 }),
+    );
     // The builder can interrupt once the plan is on screen.
     await shown[2];
     this.introDone = true;

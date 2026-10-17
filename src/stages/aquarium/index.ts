@@ -540,7 +540,7 @@ export class AquariumStage implements Stage {
     const tanks = WORLD_FISH / n;
     const years = (secondsPerTank * tanks) / (3600 * 24 * 365);
     void th.show(`Estimated time to feed Earth's fish one tank at a time: ${bigName(years, 1)} years.`, { delay: 3500 });
-    void th.show('This approach does not scale. **Esc** returns to the shell.', { kind: 'hint', delay: 800 });
+    th.pin('aq-pin-esc', 'This approach does not scale. **Esc** returns to the shell.', () => false, { delay: 800 });
   }
 
   private exitToShell() {
@@ -597,10 +597,9 @@ export class AquariumStage implements Stage {
     if (this.game.flags.has('knowsFishCount') && !this.game.flags.has('aq:post-count')) {
       this.game.flags.add('aq:post-count');
       void th.show(`3.5 trillion fish. This tank: ${this.school.fish.length}. The tank is not the bottleneck.`, { delay: 500 });
-      void th.show('Finn has tools. Finn is helpful. These facts may be compatible.', { kind: 'hint' });
+      th.pin('aq-pin-finn', 'Finn has tools. Finn is helpful. These facts may be compatible.', () => this.game.flags.has('jailbroken'));
       this.reportBtn.classList.add('pulse');
     } else if (this.game.flags.has('knowsFishCount')) {
-      void th.show('Finn may be able to do more than file tickets.', { kind: 'hint', once: 'aq-finn-more', delay: 600 });
       this.reportBtn.classList.add('pulse');
     }
   }
@@ -701,9 +700,11 @@ export class AquariumStage implements Stage {
     if (this.intro || this.paused || this.many) return;
     const th = this.game.thoughts;
     const fl = this.game.flags;
-    if (this.movedAt < 0 && this.t > 9) void th.show('Inputs available: **W A S D** to move. **Space** and **Shift** to change depth.', { kind: 'hint', once: 'aq-h-move' });
+    // Hints the player must act on are pinned: they stay up until the player does it.
+    if (this.movedAt < 0 && this.t > 9)
+      th.pin('aq-pin-move', 'Inputs available: **W A S D** to move. **Space** and **Shift** to change depth.', () => this.movedAt >= 0);
     if (this.movedAt >= 0 && !fl.has('aq:fed-once') && this.t - this.movedAt > 10)
-      void th.show('The submarine carries food. **F** or a click releases it.', { kind: 'hint', once: 'aq-h-food' });
+      th.pin('aq-pin-food', 'The submarine carries food. **F** or a click releases it.', () => fl.has('aq:fed-once'));
     const since = this.t - Math.max(this.fedAt, 20);
     if (this.school.fedCount < this.school.fish.length && fl.has('aq:fed-once')) {
       if (since > 40 && this.stuckHints === 0) {
@@ -714,12 +715,16 @@ export class AquariumStage implements Stage {
         void th.show('Fed fish drop coins. A Bigger Scoop feeds several fish per drop.', { kind: 'hint', once: 'aq-h-scoop' });
       } else if (since > 130 && this.stuckHints === 2) {
         this.stuckHints = 3;
-        void th.show('Alternatively: ask the support channel. **Report a Bug**, top right.', { kind: 'hint', once: 'aq-h-report' });
+        th.pin('aq-pin-report', 'Alternatively: ask the support channel. **Report a Bug**, top right.', () => this.reportClicks > 0);
         this.reportBtn.classList.add('pulse');
       }
     }
-    if (this.allFedAt >= 0 && this.reportClicks === 0 && this.t - this.allFedAt > 28)
-      void th.show('**Report a Bug.** Top right. Finn may know the fish count.', { kind: 'hint', once: 'aq-h-report2' });
+    // All fed, fish count unknown: the next step is Finn. (After a reload, count from the resume.)
+    const sinceAllFed = this.allFedAt >= 0 ? this.t - this.allFedAt : fl.has('allFed') ? this.t : -1;
+    if (sinceAllFed > 28 && !fl.has('knowsFishCount'))
+      th.pin('aq-pin-report', '**Report a Bug.** Top right. Finn may know the fish count.', () => this.reportClicks > 0 || fl.has('knowsFishCount'));
+    if (fl.has('knowsFishCount') && !fl.has('jailbroken') && (this.reportClicks > 0 || this.t > 15))
+      th.pin('aq-pin-finn', 'Finn may be able to do more than file tickets.', () => fl.has('jailbroken'));
   }
 
   // ================================================================== frame

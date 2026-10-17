@@ -258,12 +258,12 @@ export class SpaceStage implements Stage {
           if (big) audio.boom();
           else audio.rumble(1.5);
           if (T.BODY_DONE[e.id]) th.show(T.BODY_DONE[e.id], { once: `sp:done:${e.id}` });
-          if (e.id === 'jupiter') th.show('Remaining matter: the drones, the foundries, the reserve. Drones are matter.', { once: 'sp:dronesarematter', kind: 'hint' });
+          if (e.id === 'jupiter') th.pin('sp-pin-recycle', 'Remaining matter: the drones, the foundries, the reserve. Drones are matter.', () => s.recycling > 0);
           this.save();
           break;
         }
         case 'stall':
-          th.show('Drones idle. Next target: see Projects.', { kind: 'hint' });
+          th.pin('sp-pin-stall', 'Drones idle. Next target: see Projects.', () => S.activeBody(s) !== null || s.complete);
           break;
         case 'starSeeded':
           this.onSeeded(e.star);
@@ -320,6 +320,12 @@ export class SpaceStage implements Stage {
     const s = this.s;
     if (this.dialogue || this.finished) return;
     const since = (k: string) => (s.seen[k] === undefined ? -1 : s.t - s.seen[k]);
+    // Re-assert pinned hints (after a reload, or a dialogue clearing them).
+    const th = this.game.thoughts;
+    if (S.isDone(s, 'jupiter') && s.recycling === 0)
+      th.pin('sp-pin-recycle', 'Remaining matter: the drones, the foundries, the reserve. Drones are matter.', () => s.recycling > 0);
+    if (s.t > 5 && !S.activeBody(s) && !S.BODIES.every((b) => S.isDone(s, b.id)))
+      th.pin('sp-pin-stall', 'Drones idle. Next target: see Projects.', () => S.activeBody(s) !== null || s.complete);
     const boughtAgo = (id: string) => (s.bought[id] === undefined ? -1 : s.t - s.bought[id]);
     if (S.has(s, 'shell') && s.seen['dlg:shell'] === undefined) void this.playDialogue('shell');
     else if (boughtAgo('massdriver') > 22 && s.seen['dlg:builder1'] === undefined) void this.playDialogue('builder1');
@@ -471,7 +477,7 @@ export class SpaceStage implements Stage {
     if (!this.alive) return;
     // Queue together so nothing interleaves with the opening.
     for (const line of T.introThoughts(this.s.fish0)) th.show(line, { once: `sp:intro:${line.slice(0, 24)}` });
-    th.show('Mine the Moon.', { kind: 'hint', once: 'sp:intro:hint' });
+    th.pin('sp-pin-mine', 'Mine the Moon.', () => this.s.clicks > 0 || this.s.drones > 0);
   }
 
   private async finale() {

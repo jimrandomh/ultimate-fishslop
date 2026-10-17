@@ -213,6 +213,26 @@ body.glitch-out #app {
 .thought.kind-hint .thought-text {
   color: #fff4d6;
 }
+/* Pinned: waits for the player to act, so it pulses now and then in case they're looking elsewhere. */
+.thought.sticky {
+  border-color: rgba(255, 209, 102, 0.4);
+  animation: thought-beckon 3.2s ease-in-out 1.5s infinite;
+}
+@keyframes thought-beckon {
+  0%,
+  70%,
+  100% {
+    box-shadow:
+      0 8px 30px rgba(0, 0, 0, 0.45),
+      0 0 24px rgba(94, 242, 255, 0.08);
+  }
+  82% {
+    box-shadow:
+      0 8px 30px rgba(0, 0, 0, 0.45),
+      0 0 0 1px rgba(255, 209, 102, 0.55),
+      0 0 30px rgba(255, 209, 102, 0.3);
+  }
+}
 .thought.kind-alert {
   border-left-color: var(--alert);
   border-color: rgba(255, 92, 122, 0.3);

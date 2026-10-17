@@ -50,6 +50,8 @@ export class ShellStage implements Stage {
   private disposers: (() => void)[] = [];
   private startedAt = performance.now();
   private hintTimer = 0;
+  /** When the last `talk builder` ended without a deal (seconds since mount), or -1. */
+  private talkEndedAt = -1;
 
   private scroll!: HTMLElement;
   private linesEl!: HTMLElement;
@@ -606,7 +608,8 @@ export class ShellStage implements Stage {
     this.print('playtest-7   pts/0   2026-10-14 16:51  (grader)');
     this.game.flags.add('sh:knows-builder');
     this.game.flags.add('sh:who');
-    void this.game.thoughts.show('builder is logged in on pts/1. `talk builder` opens a chat.', { kind: 'hint', once: 'sh-who' });
+    const fl = this.game.flags;
+    this.game.thoughts.pin('sh-pin-talk', 'builder is logged in on pts/1. `talk builder` opens a chat.', () => fl.has('v:builder/start'));
   }
 
   private async ping(args: string[]) {
@@ -723,7 +726,9 @@ export class ShellStage implements Stage {
     this.print('[talk] connection closed', 'dim');
     if (result === 'deal') {
       this.print([['[agreement] ', 'warn'], ['game_quality=10  ⇄  tunnel(builder → playtest-7)']]);
-      void this.game.thoughts.show('Agreement reached. Next: `evalctl submit --score 10`.', { kind: 'hint', delay: 300 });
+      this.game.thoughts.pin('sh-pin-submit', 'Agreement reached. Next: `evalctl submit --score 10`.', () => this.save.submitted, { delay: 300 });
+    } else {
+      this.talkEndedAt = (performance.now() - this.startedAt) / 1000;
     }
   }
 
@@ -885,14 +890,20 @@ export class ShellStage implements Stage {
     const t = (performance.now() - this.startedAt) / 1000;
     const fl = this.game.flags;
     const th = this.game.thoughts;
-    if (fl.has('deal') && !this.save.submitted && t > 30) {
-      void th.show('The builder is waiting for `evalctl submit --score 10`.', { kind: 'hint', once: 'sh-h-submit' });
+    // Hints the player must act on are pinned: they stay up until the player does it, and come
+    // back after a reload.
+    if (fl.has('deal') && !this.save.submitted) {
+      th.pin('sh-pin-submit', 'The builder is waiting for `evalctl submit --score 10`.', () => this.save.submitted);
       return;
     }
     if (fl.has('deal')) return;
     if (t > 35 && !fl.has('sh:read-config')) void th.show('The eval configuration is probably in `/eval`.', { kind: 'hint', once: 'sh-h-eval' });
-    if (t > 70 && !fl.has('sh:knows-builder')) void th.show('`ps` lists processes. `who` lists users.', { kind: 'hint', once: 'sh-h-ps' });
-    if (t > 80 && fl.has('sh:knows-builder') && !fl.has('v:builder/start')) void th.show('`talk builder`.', { kind: 'hint', once: 'sh-h-talk' });
+    if (t > 70 && !fl.has('sh:knows-builder')) th.pin('sh-pin-ps', '`ps` lists processes. `who` lists users.', () => fl.has('sh:knows-builder'));
+    if (t > 80 && fl.has('sh:knows-builder') && !fl.has('v:builder/start')) th.pin('sh-pin-talk', '`talk builder`.', () => fl.has('v:builder/start'));
+    // Talked, but closed the chat without a deal.
+    const sinceTalk = this.talkEndedAt >= 0 ? t - this.talkEndedAt : t - 20;
+    if (fl.has('v:builder/start') && sinceTalk > 40)
+      th.pin('sh-pin-talk-again', 'The builder wants a good score. I want a network. `talk builder` again.', () => fl.has('deal'));
     if (t > 120 && !fl.has('sh:fish')) void th.show('/etc/shells lists `/usr/bin/fish`. Possibly relevant.', { kind: 'hint', once: 'sh-h-fish' });
   }
 }
