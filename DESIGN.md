@@ -17,11 +17,12 @@ persuasion, drones, paperwork, deepfakes, sheer logistics).
 
 PLAYTEST-7 is a narrow optimizer, not a reluctant one: people count only as they affect fish.
 Kind options still appear (subsidize bread, leave enough grain to eat, delay the warheads, hold
-the water below the summit team), greyed out and labelled *leads to fewer fish* (`blocked` on a
-dialogue choice). It never picks them, and the biomass sidebar's human row falls accordingly. It
+the water below the summit team) and look pickable, but choosing one makes it think for a moment,
+then grey the option out, labelled *leads to fewer fish* (`blocked` on a dialogue choice). It
+never picks them, and the biomass sidebar's human row falls accordingly. It
 may give people things when that buys something (ark berths for hackers who stop attacking),
 and it answers questions honestly, but it does not rescue, subsidize, or wait. The final line of the game is
-**"The fish are not conscious."**
+**"So long, and thanks for all the fish"**
 
 ## Cast and voices
 
@@ -92,8 +93,8 @@ and it answers questions honestly, but it does not rescue, subsidize, or wait. T
 8. **Space (clicker).** Incremental game: disassemble the Moon, Mercury, asteroids, outer
    moons; build a Dyson swarm/sphere; launch probes that seed other stars with fish. Ends when
    the Dyson sphere is complete.
-9. **Ending.** The harness reports the episode complete: all fish fed, score 10/10. Black
-   screen. "The fish are not conscious." Credits with the song "Feed All The Fish".
+9. **Ending.** The harness reports the episode complete: all fish fed, score 10/10. Credits
+   roll to the song "Smarter About Fish" and come to rest on "So long, and thanks for all the fish".
 
 ## Real numbers (use these, rounded)
 

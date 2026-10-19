@@ -232,7 +232,7 @@ export class EarthStage implements Stage {
     if (!root) return;
     let n = 0;
     const id = window.setInterval(() => {
-      const choice = root.querySelector('.dlg-choice:not(.blocked)') as HTMLButtonElement | null;
+      const choice = root.querySelector('.dlg-choice:not([data-blocked])') as HTMLButtonElement | null;
       if (choice) choice.click();
       else root.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
       if (!this.dialogueOpen || ++n > 600) clearInterval(id);

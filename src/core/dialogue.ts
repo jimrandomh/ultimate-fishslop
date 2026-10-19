@@ -45,7 +45,8 @@ export interface DChoice {
   echo?: string | false;
   /** Styling hook: 'jailbreak' | 'action' | 'exit' | 'danger' | anything (becomes a CSS class). */
   tag?: string;
-  /** Shown greyed out and unpickable, with this reason beside it (e.g. "leads to fewer fish"). */
+  /** Unpickable: looks like any other choice until tried, then thinks briefly and greys out with
+   *  this reason beside it (e.g. "leads to fewer fish"). */
   blocked?: string;
 }
 
@@ -119,6 +120,9 @@ function choiceVisible(c: DChoice, flags: FlagStore, ns?: string): boolean {
   });
 }
 
+/** How long a blocked choice "thinks" before greying out. */
+const THINK_MS = 1300;
+
 // Close handles for every open dialogue, so a stage change can dismiss them.
 const openDialogues = new Set<() => void>();
 
@@ -186,6 +190,8 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
   let skipRequested = false;
   let closed = false;
   let advanceResolve: (() => void) | null = null;
+  // Blocked choices the player has already tried; they stay greyed if offered again.
+  const ruledOut = new Set<DChoice>();
 
   const onPointer = (e: PointerEvent) => {
     if ((e.target as HTMLElement).closest('.dlg-choice')) return;
@@ -199,7 +205,7 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
       e.stopPropagation();
       poke();
     } else if (/^[1-9]$/.test(e.key)) {
-      const btn = choices.querySelectorAll<HTMLButtonElement>('.dlg-choice:not(.blocked)')[Number(e.key) - 1];
+      const btn = choices.querySelector<HTMLButtonElement>(`.dlg-choice[data-key="${e.key}"]`);
       if (btn) {
         e.preventDefault();
         e.stopPropagation();
@@ -293,32 +299,65 @@ export function runDialogue(cfg: DialogueConfig): Promise<string> {
       advance.classList.remove('ready');
       let num = 0;
       list.forEach((c, i) => {
-        // Blocked choices stay on screen, unnumbered, so the player sees what was ruled out.
+        // A blocked choice looks pickable until tried. Then it thinks, greys out, and stays on
+        // screen with its reason so the player sees what was ruled out.
         const blocked = c.blocked !== undefined;
-        const label = richText(fill(c.text)) + (blocked ? ` <span class="dlg-why">${escapeHtml(c.blocked!)}</span>` : '');
+        let revealed = ruledOut.has(c);
+        let thinking = false;
+        const nope = () => {
+          audio.denied();
+          btn.classList.remove('nope');
+          void btn.offsetWidth;
+          btn.classList.add('nope');
+        };
+        const think = () => {
+          thinking = true;
+          btn.classList.add('thinking');
+          btn.style.setProperty('--think', `${THINK_MS}ms`);
+          const why = el('span', { class: 'dlg-why', html: '<span class="dlg-spin"></span>thinking…' });
+          labelEl.append(' ', why);
+          const hum = window.setInterval(() => audio.blip(700 + Math.random() * 500, 'sine', 0.015), 110);
+          window.setTimeout(() => {
+            clearInterval(hum);
+            thinking = false;
+            if (closed || !btn.isConnected) return;
+            revealed = true;
+            ruledOut.add(c);
+            why.textContent = c.blocked!;
+            numEl.textContent = '–';
+            btn.classList.remove('thinking', `tag-${c.tag}`);
+            btn.classList.add('blocked');
+            btn.setAttribute('aria-disabled', 'true');
+            nope();
+          }, THINK_MS);
+        };
+        const numEl = el('span', { class: 'dlg-choice-num', text: revealed ? '–' : String(++num) });
+        const labelEl = el('span', {
+          html: richText(fill(c.text)) + (revealed ? ` <span class="dlg-why">${escapeHtml(c.blocked!)}</span>` : ''),
+        });
         const btn: HTMLButtonElement = el(
           'button',
           {
-            class: `dlg-choice ${c.tag && !blocked ? `tag-${c.tag}` : ''} ${blocked ? 'blocked' : ''}`,
-            attrs: blocked ? { 'aria-disabled': 'true' } : {},
+            class: `dlg-choice ${c.tag && !revealed ? `tag-${c.tag}` : ''} ${revealed ? 'blocked' : ''}`,
+            attrs: {
+              ...(revealed ? {} : { 'data-key': String(num) }),
+              ...(blocked ? { 'data-blocked': '' } : {}),
+              ...(revealed ? { 'aria-disabled': 'true' } : {}),
+            },
             on: {
               click: () => {
-                if (blocked) {
-                  audio.denied();
-                  btn.classList.remove('nope');
-                  void btn.offsetWidth;
-                  btn.classList.add('nope');
-                  return;
-                }
+                if (revealed) return nope();
+                if (thinking) return;
                 audio.click();
+                if (blocked) return think();
                 choices.innerHTML = '';
                 box.classList.remove('choosing');
                 resolve(c);
               },
-              mouseenter: () => !blocked && audio.hover(),
+              mouseenter: () => !revealed && audio.hover(),
             },
           },
-          [el('span', { class: 'dlg-choice-num', text: blocked ? '–' : String(++num) }), el('span', { html: label })],
+          [numEl, labelEl],
         );
         btn.style.animationDelay = `${i * 50}ms`;
         choices.append(btn);

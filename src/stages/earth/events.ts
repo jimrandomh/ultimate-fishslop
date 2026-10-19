@@ -100,7 +100,7 @@ function c(
   };
 }
 
-/** A kind option, ruled out by the objective: shown greyed out, never pickable. */
+/** A kind option, ruled out by the objective: looks pickable, but greys out when tried. */
 const no = (text: string): EChoice => ({ text, goto: '', blocked: 'leads to fewer fish' });
 
 const say = (...lines: LineSpec[]): LineSpec[] => lines;

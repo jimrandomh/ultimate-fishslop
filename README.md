@@ -108,7 +108,8 @@ music-src/                Suno prompts, lyrics, and the generation script
 
 - Music generated with [Suno](https://suno.com) on the author's account and downloaded through
   Suno's official download channel; each track's `.json` sidecar in `public/music/` records
-  its prompt and download date. Lyrics for "Feed All The Fish" are in `music-src/`.
+  its prompt and download date. Lyrics for the earlier tracks are in `music-src/`;
+  the end-title song, "Smarter About Fish", came out of `music-src/ending-candidates/`.
 - Earth imagery: NASA Blue Marble / Visible Earth (public domain), via the
   [three-globe](https://github.com/vasturiano/three-globe) example assets.
 - Fonts: Fredoka, Inter, JetBrains Mono and Space Grotesk (SIL Open Font License), via Fontsource.

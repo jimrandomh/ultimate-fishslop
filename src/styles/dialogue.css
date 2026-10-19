@@ -267,7 +267,8 @@
   border-style: dashed;
   color: rgba(255, 255, 255, 0.25);
 }
-.dlg-choice.blocked > span:last-child {
+.dlg-choice.blocked > span:last-child,
+.dlg-choice.thinking > span:last-child {
   flex: 1;
   display: flex;
   flex-wrap: wrap;
@@ -287,6 +288,56 @@
   font-style: normal;
   color: rgba(255, 150, 168, 0.85);
   white-space: nowrap;
+}
+/* A blocked choice that was just picked: weighs it, with a bar filling along the bottom edge. */
+.dlg-choice.thinking {
+  position: relative;
+  overflow: hidden;
+  cursor: progress;
+}
+.dlg-choice.thinking::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: rgba(94, 242, 255, 0.8);
+  box-shadow: 0 0 8px rgba(94, 242, 255, 0.6);
+  transform-origin: left;
+  animation: think-fill var(--think, 1.3s) cubic-bezier(0.3, 0.1, 0.5, 1) forwards;
+}
+@keyframes think-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+.dlg .dlg-choices .dlg-choice.thinking .dlg-why {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-color: rgba(94, 242, 255, 0.32);
+  background: rgba(94, 242, 255, 0.07);
+  color: rgba(159, 246, 255, 0.85);
+  animation: why-in 0.2s ease;
+}
+.dlg-spin {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes why-in {
+  from {
+    opacity: 0;
+  }
 }
 .dlg-choice.blocked.nope {
   animation: choice-nope 0.35s ease;
